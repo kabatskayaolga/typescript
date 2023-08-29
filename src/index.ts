@@ -1,5 +1,5 @@
 class School {
-  directions = [];
+  directions: any = [];
 
   addDirection(direction: string): void {
     this.directions.push(direction);
@@ -7,7 +7,8 @@ class School {
 }
 
 class Direction {
-  levels = [];
+  levels: any= [];
+  _name: string;
 
 
   get name(): string {
@@ -24,10 +25,12 @@ class Direction {
 }
 
 class Level {
-  groups = [];
+  groups: any = [];
+  _name: string;
+  _program: string;
 
   constructor(name: string, program: string) {
-    this.name = name;
+    this._name = name;
     this._program = program;
   }
 
@@ -45,7 +48,9 @@ class Level {
 }
 
 class Group {
-  _students = [];
+  _students: any = [];
+  directionName: string;
+  levelName: string;
 
   get students() {
     return this._students;
@@ -56,13 +61,13 @@ class Group {
     this.levelName = levelName;
   }
 
-  addStudent(student) {
+  addStudent(student: any) {
     this._students.push(student);
   }
 
-  showPerformance() {
+  showPerformance(): any {
     const sortedStudents = this.students.toSorted(
-      (a, b) => b.getPerformanceRating() - a.getPerformanceRating()
+      (a: any, b: any) => b.getPerformanceRating() - a.getPerformanceRating()
     );
 
     return sortedStudents;
@@ -70,8 +75,12 @@ class Group {
 }
 
 class Student {
-  grades = {};
-  attendance = [];
+  grades: any = {};
+  attendance: any = [];
+  
+  firstName: string;
+  lastName: string;
+  birthYear: number;
 
   constructor(firstName: string, lastName: string, birthYear: number) {
     this.firstName = firstName;
@@ -100,15 +109,15 @@ class Student {
   }
 
   getPerformanceRating(): number {
-    const gradeValues = Object.values(this.grades);
+    const gradeValues: any = Object.values(this.grades);
 
     if (gradeValues.length === 0) return 0;
 
     const averageGrade: number =
-      gradeValues.reduce((sum, grade) => sum + grade, 0) / gradeValues.length;
+      gradeValues.reduce((sum: number, grade: number) => sum + grade, 0) / gradeValues.length;
 
     const attendancePercentage: number =
-      (this.attendance.filter((present) => present).length /
+      (this.attendance.filter((present: boolean) => present).length /
         this.attendance.length) *
       100;
 
