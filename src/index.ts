@@ -52,7 +52,7 @@ class Group {
   subjectName: string;
   levelName: string;
 
-  get students() {
+  get students(): Student[] {
     return this._students;
   }
 
