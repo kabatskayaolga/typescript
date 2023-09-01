@@ -1,13 +1,13 @@
 class School {
-  directions: any = [];
+  subjects: Subject[] = [];
 
-  addDirection(direction: string): void {
-    this.directions.push(direction);
+  addSubject(subject: Subject): void {
+    this.subjects.push(subject);
   }
 }
 
-class Direction {
-  levels: any= [];
+class Subject {
+  levels: Level[]= [];
   _name: string;
 
 
@@ -19,13 +19,13 @@ class Direction {
     this._name = name;
   }
 
-  addLevel(level: number): void {
+  addLevel(level: Level): void {
     this.levels.push(level);
   }
 }
 
 class Level {
-  groups: any = [];
+  groups: Group[] = [];
   _name: string;
   _program: string;
 
@@ -42,41 +42,51 @@ class Level {
     return this._program;
   }
 
-  addGroup(group: string): void {
+  addGroup(group: Group): void {
     this.groups.push(group);
   }
 }
 
 class Group {
-  _students: any = [];
-  directionName: string;
+  _students: Student[] = [];
+  subjectName: string;
   levelName: string;
 
   get students() {
     return this._students;
   }
 
-  constructor(directionName: string, levelName: string) {
-    this.directionName = directionName;
+  constructor(subjectName: string, levelName: string) {
+    this.subjectName = subjectName;
     this.levelName = levelName;
   }
 
-  addStudent(student: any) {
+  addStudent(student: Student) {
     this._students.push(student);
   }
 
-  showPerformance(): any {
-    const sortedStudents = this.students.toSorted(
-      (a: any, b: any) => b.getPerformanceRating() - a.getPerformanceRating()
+  showPerformance(): Student[] {
+    // const sortedStudents: Student[] = this.students.toSorted( // error: Property 'toSorted' does not exist on type 'Student[]'. 
+    const sortedStudents: Student[] = this.students.sort(
+      (a: Student, b: Student) => b.getPerformanceRating() - a.getPerformanceRating()
     );
 
     return sortedStudents;
   }
 }
 
+enum Grades {
+  Excellent = 100,
+  VeryGood = 80,
+  Good = 60,
+  Satisfy = 40,
+  Sufficient = 20,
+  NotSufficien = 0
+}
+
 class Student {
-  grades: any = {};
-  attendance: any = [];
+  grades: {[subject: string]: Grades} = {}; // subject have to be one of subjects[]._name ????
+  attendance: boolean[] = [];
   
   firstName: string;
   lastName: string;
@@ -109,7 +119,7 @@ class Student {
   }
 
   getPerformanceRating(): number {
-    const gradeValues: any = Object.values(this.grades);
+    const gradeValues: number[] = Object.values(this.grades);
 
     if (gradeValues.length === 0) return 0;
 
