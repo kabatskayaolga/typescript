@@ -36,7 +36,7 @@
             ["get", "set"],
             "constructor",
             "method"
-          ],
+          ]
           // "order": "alphabetically"
         }
       }
