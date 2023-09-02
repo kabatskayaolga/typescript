@@ -1,31 +1,73 @@
 class School {
-  subjects: Subject[] = [];
+  // implement 'add area', 'remove area', 'add lecturer', and 'remove lecturer' methods
 
-  addSubject(subject: Subject): void {
-    this.subjects.push(subject);
+  _areas: Area[] = [];
+  _lecturers: {
+    name: string,
+    surname: string,
+    position: string,
+    company: string,
+    experience: string,
+    courses: string,
+    contacts: string
+  }[] = []; // Name, surname, position, company, experience, courses, contacts
+
+  get areas(): Area[]{
+    return this._areas
+  }
+  addArea(area: Area): void {
+    this.areas.push(area);
+  }
+  removeArea(name: string): void {
+    this.areas.filter((area) => name !== area.name)
+  }
+
+  get lecturers() {
+    return this._lecturers;
+  }
+  addLecturer(lecturer: {
+    name: string,
+    surname: string,
+    position: string,
+    company: string,
+    experience: string,
+    courses: string,
+    contacts: string
+  }): void {
+    this.lecturers.push(lecturer);
+  }
+  removeLecturer(name: string): void {
+    this.lecturers.filter((lecturer) => name !== lecturer.name)
   }
 }
 
-class Subject {
-  levels: Level[]= [];
+class Area {
+  _levels: Level[]= [];
   _name: string;
-
-
-  get name(): string {
-    return this._name;
-  }
 
   constructor(name: string) {
     this._name = name;
   }
 
+  get name(): string {
+    return this._name;
+  }
+
+  get levels(): Level[] {
+    return this._levels;
+  }
+
   addLevel(level: Level): void {
     this.levels.push(level);
+  }
+
+  removeLevel(name: string): void {
+    this.levels.filter((level) => name !== level.name)
   }
 }
 
 class Level {
-  groups: Group[] = [];
+  _groups: Group[] = [];
   _name: string;
   _program: string;
 
@@ -42,32 +84,62 @@ class Level {
     return this._program;
   }
 
+
+  get groups(): Group[] {
+    return this._groups
+  }
+
   addGroup(group: Group): void {
     this.groups.push(group);
   }
+
+  removeGroup(name: string): void {
+    this.groups.filter((group) => name !== group.directionName)
+  }
 }
 
+enum Status {
+  Active = 'active',
+  InActive = 'inactive'
+}
 class Group {
+  _area: Area;
+  _status: Status;
   _students: Student[] = [];
-  subjectName: string;
+
+  directionName: string;
   levelName: string;
 
-  get students(): Student[] {
+  constructor(directionName: string, levelName: string, area: Area, status: Status) {
+    this.directionName = directionName;
+    this.levelName = levelName;
+    this._area = area;
+    this._status = status;
+  }
+
+  get students(){
     return this._students;
   }
 
-  constructor(subjectName: string, levelName: string) {
-    this.subjectName = subjectName;
-    this.levelName = levelName;
+  addStudent(student: Student) {
+    this.students.push(student);
   }
 
-  addStudent(student: Student) {
-    this._students.push(student);
+  removeStudent(name: string): void {
+    this.students.filter((student) => name !== student._firstName)
+  }
+
+  get status(): Status{
+    return this._status
+  }
+
+  set status(status: Status){
+    status
   }
 
   showPerformance(): Student[] {
-    // const sortedStudents: Student[] = this.students.toSorted( // error: Property 'toSorted' does not exist on type 'Student[]'. 
-    const sortedStudents: Student[] = this.students.sort(
+    const sortedStudents: Student[] = this.students.toSorted( // error: Property 'toSorted' does not exist on type 'Student[]'. 
+    // const sortedStudents: Student[] = this.students.sort(
       (a: Student, b: Student) => b.getPerformanceRating() - a.getPerformanceRating()
     );
 
@@ -85,38 +157,47 @@ enum Grades {
 }
 
 class Student {
-  grades: {[subject: string]: Grades} = {}; // subject have to be one of subjects[]._name ????
-  attendance: boolean[] = [];
+  _grades: Grades[] = [];
+  _visits: boolean[] = [];
   
-  firstName: string;
-  lastName: string;
-  birthYear: number;
+  _firstName: string;
+  _lastName: string;
+  _birthYear: number;
 
   constructor(firstName: string, lastName: string, birthYear: number) {
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.birthYear = birthYear;
+    this._firstName = firstName;
+    this._lastName = lastName;
+    this._birthYear = birthYear;
   }
 
+
   get fullName(): string {
-    return `${this.lastName} ${this.firstName}`;
+    return `${this._lastName} ${this._firstName}`;
   }
 
   set fullName(value: string) {
-    [this.lastName, this.firstName] = value.split(" ");
+    [this._lastName, this._firstName] = value.split(" ");
   }
 
   get age(): number {
-    return new Date().getFullYear() - this.birthYear;
+    return new Date().getFullYear() - this._birthYear;
   }
 
-  setGrade(subject: string, grade: number): void {
-    this.grades[subject] = grade;
+  
+  get grades(): Grades[]{
+    return this._grades;
+  }
+  set grades(mark: Grades){
+    this.grades.push(mark)
   }
 
-  markAttendance(present: boolean) {
-    this.attendance.push(present);
+  get visits(): boolean[]{
+    return this._visits
   }
+  set visits(present: boolean) {
+    this.visits.push(present);
+  }
+
 
   getPerformanceRating(): number {
     const gradeValues: number[] = Object.values(this.grades);
@@ -127,8 +208,8 @@ class Student {
       gradeValues.reduce((sum: number, grade: number) => sum + grade, 0) / gradeValues.length;
 
     const attendancePercentage: number =
-      (this.attendance.filter((present: boolean) => present).length /
-        this.attendance.length) *
+      (this._visits.filter((present: boolean) => present).length /
+        this._visits.length) *
       100;
 
     return (averageGrade + attendancePercentage) / 2;
