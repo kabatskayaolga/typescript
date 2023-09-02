@@ -32,7 +32,7 @@ class School {
     this.areas.push(area);
   }
 
-  removeArea(name: string): void {
+  removeArea(name: AreaName): void {
     this.areas.filter(area => name !== area.name);
   }
 
@@ -53,11 +53,18 @@ class School {
   }
 }
 
+enum AreaName {
+  Development = 'Development',
+  Management = 'Management',
+  Design = 'Design',
+  QA = 'QA',
+}
+
 class Area {
   _levels: Level[] = [];
-  _name: string;
+  _name: AreaName;
 
-  get name(): string {
+  get name(): AreaName {
     return this._name;
   }
 
@@ -65,7 +72,7 @@ class Area {
     return this._levels;
   }
 
-  constructor(name: string) {
+  constructor(name: AreaName) {
     this._name = name;
   }
 
@@ -73,17 +80,23 @@ class Area {
     this.levels.push(level);
   }
 
-  removeLevel(name: string): void {
+  removeLevel(name: LevelName): void {
     this.levels.filter(level => name !== level.name);
   }
 }
 
+enum LevelName {
+  Junior = 'junior',
+  Middle = 'middle',
+  Senior = 'senior',
+}
+
 class Level {
   _groups: Group[] = [];
-  _name: string;
+  _name: LevelName;
   _program: string;
 
-  get name(): string {
+  get name(): LevelName {
     return this._name;
   }
 
@@ -95,7 +108,7 @@ class Level {
     return this._groups;
   }
 
-  constructor(name: string, program: string) {
+  constructor(name: LevelName, program: string) {
     this._name = name;
     this._program = program;
   }
@@ -150,8 +163,6 @@ class Group {
 
   showPerformance(): Student[] {
     const sortedStudents: Student[] = this.students.toSorted(
-      // error: Property 'toSorted' does not exist on type 'Student[]'.
-      // const sortedStudents: Student[] = this.students.sort(
       (a: Student, b: Student) => b.getPerformanceRating() - a.getPerformanceRating()
     );
 
