@@ -20,11 +20,9 @@ class Company {
   }
 
   addDepartment(department: Department | Accounting): void {
+    this.departmens.push(department);
     if (isDepartmentAccounting(department)) {
-      this.departmens.push(department);
       this.accountant = department;
-    } else {
-      this.departmens.push(department);
     }
     this.updateBalance();
   }
