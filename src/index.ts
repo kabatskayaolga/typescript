@@ -1,237 +1,227 @@
-class School {
-  // implement 'add area', 'remove area', 'add lecturer', and 'remove lecturer' methods
+/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+function isPreHiredEmployee(employee: unknown): employee is PreHiredEmployee {
+  return employee instanceof PreHiredEmployee;
+}
 
-  _areas: Area[] = [];
-  _lecturers: {
-    name: string;
-    surname: string;
-    position: string;
-    company: string;
-    experience: string;
-    courses: string;
-    contacts: string;
-  }[] = []; // Name, surname, position, company, experience, courses, contacts
+function isDepartmentAccounting(department: unknown): department is Accounting {
+  return department instanceof Accounting;
+}
 
-  get areas(): Area[] {
-    return this._areas;
+class Company {
+  name: string;
+  departmens: Department[] & Accounting[] = [];
+  preHiredEmployees: PreHiredEmployee[] = [];
+  allEmployees: PreHiredEmployee[] & Employee[] = []; //// ???????
+  accountant: Accounting | undefined;
+
+  constructor(name: string) {
+    this.name = name;
   }
 
-  get lecturers(): {
-    name: string;
-    surname: string;
-    position: string;
-    company: string;
-    experience: string;
-    courses: string;
-    contacts: string;
-  }[] {
-    return this._lecturers;
+  addDepartment(department: Department | Accounting): void {
+    if (isDepartmentAccounting(department)) {
+      this.departmens.push(department);
+      this.accountant = department;
+    } else {
+      department;
+      this.departmens.push(department);
+    }
+    this.updateBalance();
   }
 
-  addArea(area: Area): void {
-    this.areas.push(area);
+  removeDepartment(departmentName: string): void {
+    this.departmens.filter(department => department.name !== departmentName);
   }
 
-  removeArea(name: AreaName): void {
-    this.areas.filter(area => name !== area.name);
+  addPreHiredEmployees(employee: PreHiredEmployee): void {
+    this.preHiredEmployees.push(employee);
   }
 
-  addLecturer(lecturer: {
-    name: string;
-    surname: string;
-    position: string;
-    company: string;
-    experience: string;
-    courses: string;
-    contacts: string;
-  }): void {
-    this.lecturers.push(lecturer);
+  addEmployee(employee: Employee | PreHiredEmployee, departmentName: string, status: Status): void {
+    const department = this.departmens.find(department => departmentName === department.name);
+    let employeeWithNewData;
+    if (department) {
+      if (isPreHiredEmployee(employee)) {
+        const { firstName, lastName, bankAccountNumber, salary } = employee;
+
+        employeeWithNewData = new Employee(firstName, lastName, bankAccountNumber, salary, status, department);
+
+        this.allEmployees.push(employeeWithNewData);
+        department.addEmployee(employeeWithNewData);
+
+        this.preHiredEmployees.filter(preHiredEmployee => employee.lastName !== preHiredEmployee.lastName);
+      } else {
+        const { firstName, lastName, paymentInformation, salary } = employee;
+        employeeWithNewData = new Employee(firstName, lastName, paymentInformation, salary, status, department);
+
+        if (employee.department.name !== department.name) {
+          department.addEmployee(employeeWithNewData);
+
+          const oldDepartment = this.departmens.find(department => employee.department.name === department.name);
+          oldDepartment?.removeEmployee(employee.lastName);
+        } else {
+          this.allEmployees.push(employeeWithNewData);
+        }
+      }
+    }
+    if (status === Status.Active && this.accountant && employeeWithNewData) {
+      this.accountant.takeOntheBalance(employeeWithNewData);
+    }
   }
 
-  removeLecturer(name: string): void {
-    this.lecturers.filter(lecturer => name !== lecturer.name);
+  removeEmployee(employee: PreHiredEmployee | Employee): void {
+    if (isPreHiredEmployee(employee)) {
+      this.allEmployees.filter(item => item.lastName !== employee.lastName);
+    } else {
+      const department = this.departmens.find(department => employee.department.name === department.name);
+      department?.removeEmployee(employee.lastName);
+    }
+  }
+
+  paySalaries(): void {
+    if (this.accountant) {
+      const salaries = this.accountant.paySalaries();
+      this.departmens.map(
+        department => department.name in salaries && department.updateCredit(salaries[department.name])
+      );
+    }
+    this.updateBalance();
+  }
+
+  updateBalance(): void {
+    let balance = 0;
+    this.departmens.map(department => (balance += department.budget));
+    this.accountant?.updateBalanceValue(balance);
   }
 }
 
-enum AreaName {
-  Development = 'Development',
-  Management = 'Management',
-  Design = 'Design',
-  QA = 'QA',
+class Department {
+  name: string;
+  domainArea: string;
+
+  employees: Employee[] = [];
+
+  debit: number;
+  credit: number;
+
+  get budget(): number {
+    return this.debit - this.credit;
+  }
+
+  constructor(name: string, domainArea: string, debit: number, credit: number) {
+    this.name = name;
+    this.domainArea = domainArea;
+    this.debit = debit;
+    this.credit = credit;
+  }
+
+  updateCredit(value: number): void {
+    this.credit += value;
+  }
+
+  addEmployee(employee: Employee): void {
+    this.employees.push(employee);
+  }
+
+  removeEmployee(lastName: string): void {
+    this.employees = this.employees.filter(employee => {
+      return lastName !== employee.lastName;
+    });
+  }
 }
 
-class Area {
-  _levels: Level[] = [];
-  _name: AreaName;
+class Accounting extends Department {
+  name: string = 'Accouning';
+  domainArea: string = 'Accouning';
+  employeesOnTheBalance: Employee[] = [];
+  departmentsOnTheBalance: Department[] = [];
+  balance: number = 0;
 
-  get name(): AreaName {
-    return this._name;
+  takeOntheBalance(item: Employee | Department): void {
+    if (item instanceof Employee) {
+      this.employeesOnTheBalance.push(item);
+      if (!this.departmentsOnTheBalance.some(department => department.name === item.department.name)) {
+        this.takeOntheBalance(item.department);
+      }
+    } else {
+      this.departmentsOnTheBalance.push(item);
+    }
   }
 
-  get levels(): Level[] {
-    return this._levels;
+  removeFromBalance(item: Employee | Department): void {
+    if (item instanceof Employee) {
+      this.employeesOnTheBalance = this.employeesOnTheBalance.filter(employee => employee.lastName !== item.lastName);
+
+      if (this.departmentsOnTheBalance.filter(department => department.name === item.department.name).length === 1) {
+        this.removeFromBalance(item.department);
+      }
+    } else {
+      this.departmentsOnTheBalance = this.departmentsOnTheBalance.filter(department => department.name !== item.name);
+    }
   }
 
-  constructor(name: AreaName) {
-    this._name = name;
+  paySalaries(): { [key: string]: number } {
+    let balance = {};
+
+    this.departmentsOnTheBalance.map(department => {
+      let employeeSalaries = 0;
+
+      this.employeesOnTheBalance
+        .filter(employee => employee.department.name === department.name)
+        .map(employee => (employeeSalaries += employee.salary));
+
+      balance = { ...balance, [department.name]: employeeSalaries };
+    });
+    return balance;
   }
 
-  addLevel(level: Level): void {
-    this.levels.push(level);
-  }
-
-  removeLevel(name: LevelName): void {
-    this.levels.filter(level => name !== level.name);
+  updateBalanceValue(value: number): void {
+    this.balance = value;
   }
 }
 
-enum LevelName {
-  Junior = 'junior',
-  Middle = 'middle',
-  Senior = 'senior',
-}
+class PreHiredEmployee {
+  firstName: string;
+  lastName: string;
+  bankAccountNumber: string;
+  salary: number;
 
-class Level {
-  _groups: Group[] = [];
-  _name: LevelName;
-  _program: string;
-
-  get name(): LevelName {
-    return this._name;
-  }
-
-  get program(): string {
-    return this._program;
-  }
-
-  get groups(): Group[] {
-    return this._groups;
-  }
-
-  constructor(name: LevelName, program: string) {
-    this._name = name;
-    this._program = program;
-  }
-
-  addGroup(group: Group): void {
-    this.groups.push(group);
-  }
-
-  removeGroup(name: string): void {
-    this.groups.filter(group => name !== group.directionName);
+  constructor(firstName: string, lastName: string, bankAccountNumber: string, salary: number) {
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.bankAccountNumber = bankAccountNumber;
+    this.salary = salary;
   }
 }
 
 enum Status {
   Active = 'active',
   InActive = 'inactive',
-}
-class Group {
-  _area: Area;
-  _status: Status;
-  _students: Student[] = [];
-
-  directionName: string;
-  levelName: string;
-
-  get students(): Student[] {
-    return this._students;
-  }
-
-  get status(): Status {
-    return this._status;
-  }
-
-  set status(status: Status) {
-    status;
-  }
-
-  constructor(directionName: string, levelName: string, area: Area, status: Status) {
-    this.directionName = directionName;
-    this.levelName = levelName;
-    this._area = area;
-    this._status = status;
-  }
-
-  addStudent(student: Student): void {
-    this.students.push(student);
-  }
-
-  removeStudent(name: string): void {
-    this.students.filter(student => name !== student._firstName);
-  }
-
-  showPerformance(): Student[] {
-    const sortedStudents: Student[] = this.students.toSorted(
-      (a: Student, b: Student) => b.getPerformanceRating() - a.getPerformanceRating()
-    );
-
-    return sortedStudents;
-  }
+  OnUnpaidLeave = 'on unpaid leave',
 }
 
-enum Grades {
-  Excellent = 100,
-  VeryGood = 80,
-  Good = 60,
-  Satisfy = 40,
-  Sufficient = 20,
-  NotSufficien = 0,
-}
+class Employee {
+  firstName: string;
+  lastName: string;
+  paymentInformation: string;
+  salary: number;
+  status: Status;
+  department: Department;
 
-class Student {
-  _grades: Grades[] = [];
-  _visits: boolean[] = [];
-
-  _firstName: string;
-  _lastName: string;
-  _birthYear: number;
-
-  get fullName(): string {
-    return `${this._lastName} ${this._firstName}`;
-  }
-
-  set fullName(value: string) {
-    [this._lastName, this._firstName] = value.split(' ');
-  }
-
-  get age(): number {
-    return new Date().getFullYear() - this._birthYear;
-  }
-
-  get grades(): Grades[] {
-    return this._grades;
-  }
-
-  set grades(mark: Grades) {
-    this.grades.push(mark);
-  }
-
-  get visits(): boolean[] {
-    return this._visits;
-  }
-
-  set visits(present: boolean) {
-    this.visits.push(present);
-  }
-
-  constructor(firstName: string, lastName: string, birthYear: number) {
-    this._firstName = firstName;
-    this._lastName = lastName;
-    this._birthYear = birthYear;
-  }
-
-  getPerformanceRating(): number {
-    const gradeValues: number[] = Object.values(this.grades);
-
-    if (gradeValues.length === 0) return 0;
-
-    const averageGrade: number =
-      gradeValues.reduce((sum: number, grade: number) => sum + grade, 0) / gradeValues.length;
-
-    const attendancePercentage: number =
-      (this._visits.filter((present: boolean) => present).length / this._visits.length) * 100;
-
-    return (averageGrade + attendancePercentage) / 2;
+  constructor(
+    firstName: string,
+    lastName: string,
+    paymentInformation: string,
+    salary: number,
+    status: Status,
+    department: Department
+  ) {
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.paymentInformation = paymentInformation;
+    this.salary = salary;
+    this.status = status;
+    this.department = department;
   }
 }
