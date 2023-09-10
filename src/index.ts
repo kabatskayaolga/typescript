@@ -54,6 +54,8 @@ class Company {
         const { firstName, lastName, paymentInformation, salary } = employee;
         employeeWithNewData = new Employee(firstName, lastName, paymentInformation, salary, status, department);
 
+        this.accountant?.removeFromBalance(employee);
+
         if (employee.department.name !== department.name) {
           department.addEmployee(employeeWithNewData);
 
