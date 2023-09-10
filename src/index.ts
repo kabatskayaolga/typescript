@@ -24,7 +24,6 @@ class Company {
       this.departmens.push(department);
       this.accountant = department;
     } else {
-      department;
       this.departmens.push(department);
     }
     this.updateBalance();
