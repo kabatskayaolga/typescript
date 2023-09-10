@@ -12,7 +12,7 @@ class Company {
   name: string;
   departmens: Department[] & Accounting[] = [];
   preHiredEmployees: PreHiredEmployee[] = [];
-  allEmployees: PreHiredEmployee[] & Employee[] = []; //// ???????
+  allEmployees: (PreHiredEmployee | Employee)[] = [];
   accountant: Accounting | undefined;
 
   constructor(name: string) {
