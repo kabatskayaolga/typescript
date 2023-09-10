@@ -10,7 +10,7 @@ function isDepartmentAccounting(department: unknown): department is Accounting {
 
 class Company {
   name: string;
-  departmens: Department[] & Accounting[] = [];
+  departmens: (Department | Accounting)[] = [];
   preHiredEmployees: PreHiredEmployee[] = [];
   allEmployees: (PreHiredEmployee | Employee)[] = [];
   accountant: Accounting | undefined;
