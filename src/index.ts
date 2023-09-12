@@ -1,226 +1,95 @@
-/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-function isPreHiredEmployee(employee: unknown): employee is PreHiredEmployee {
-  return employee instanceof PreHiredEmployee;
+// Напишіть функцію isString, яка буде перевіряти, чи передано значення рядком. Потім використовуйте її для звуження типу змінної.
+
+function isString(value: unknown): value is string {
+  return typeof value === 'string';
+}
+function testIsString(value: string | number): string {
+  if (isString(value)) {
+    return 'hohohoho';
+  }
+  return 'brrrr';
 }
 
-function isDepartmentAccounting(department: unknown): department is Accounting {
-  return department instanceof Accounting;
+// У вас є масив з елементами різних типів. Напишіть функцію, яка приймає цей масив і фільтрує його так, щоб у підсумку в ньому залишилися лише рядки. Використовуйте захисника типу для цього завдання.
+
+function arrayFilter(arr: unknown[]): string[] {
+  const newErray: string[] = [];
+  arr.forEach(element => {
+    typeof element === 'string' && newErray.push(element);
+  });
+  return newErray;
 }
 
-class Company {
-  name: string;
-  departmens: (Department | Accounting)[] = [];
-  preHiredEmployees: PreHiredEmployee[] = [];
-  allEmployees: (PreHiredEmployee | Employee)[] = [];
-  accountant: Accounting | undefined;
+// У вас є об'єкт, який може містити довільні властивості. Напишіть функцію, яка приймає цей об'єкт і повертає значення однієї з властивостей, якщо вона існує і має певний тип.
+type ParamType = string | number | boolean | Function | symbol | undefined | object | bigint;
 
-  constructor(name: string) {
-    this.name = name;
-  }
+function getValue(obj: { [key: string]: ParamType }, property: string, type: ParamType): ParamType | void {
+  if (property in obj && typeof obj[property] === type) return obj[property];
+}
 
-  addDepartment(department: Department | Accounting): void {
-    this.departmens.push(department);
-    if (isDepartmentAccounting(department)) {
-      this.accountant = department;
+// Створіть кілька захисників типу, кожен з яких перевіряє певний аспект об'єкта (наприклад, наявність певної властивості або її тип). Потім напишіть функцію, яка використовує цих захисників у комбінації для звуження типу об'єкта до більш конкретного типу.
+
+function hasProperty(obj: { [key: string]: unknown }, property: string): boolean {
+  return property in obj;
+}
+
+function isNumber(obj: { [key: string]: unknown }, property: string): boolean {
+  return typeof obj[property] === 'number';
+}
+
+function filterObject(obj: { [key: string]: unknown }, property: string): void {
+  if (hasProperty(obj, property)) {
+    if (isNumber(obj, property)) {
+      // Property is valid
     }
-    this.updateBalance();
-  }
-
-  removeDepartment(departmentName: string): void {
-    this.departmens.filter(department => department.name !== departmentName);
-  }
-
-  addPreHiredEmployees(employee: PreHiredEmployee): void {
-    this.preHiredEmployees.push(employee);
-  }
-
-  addEmployee(employee: Employee | PreHiredEmployee, departmentName: string, status: Status): void {
-    const department = this.departmens.find(department => departmentName === department.name);
-    let employeeWithNewData;
-    if (department) {
-      if (isPreHiredEmployee(employee)) {
-        const { firstName, lastName, bankAccountNumber, salary } = employee;
-
-        employeeWithNewData = new Employee(firstName, lastName, bankAccountNumber, salary, status, department);
-
-        this.allEmployees.push(employeeWithNewData);
-        department.addEmployee(employeeWithNewData);
-
-        this.preHiredEmployees.filter(preHiredEmployee => employee.lastName !== preHiredEmployee.lastName);
-      } else {
-        const { firstName, lastName, paymentInformation, salary } = employee;
-        employeeWithNewData = new Employee(firstName, lastName, paymentInformation, salary, status, department);
-
-        this.accountant?.removeFromBalance(employee);
-
-        if (employee.department.name !== department.name) {
-          department.addEmployee(employeeWithNewData);
-
-          const oldDepartment = this.departmens.find(department => employee.department.name === department.name);
-          oldDepartment?.removeEmployee(employee.lastName);
-        } else {
-          this.allEmployees.push(employeeWithNewData);
-        }
-      }
-    }
-    if (status === Status.Active && this.accountant && employeeWithNewData) {
-      this.accountant.takeOntheBalance(employeeWithNewData);
-    }
-  }
-
-  removeEmployee(employee: PreHiredEmployee | Employee): void {
-    if (isPreHiredEmployee(employee)) {
-      this.allEmployees.filter(item => item.lastName !== employee.lastName);
-    } else {
-      const department = this.departmens.find(department => employee.department.name === department.name);
-      department?.removeEmployee(employee.lastName);
-    }
-  }
-
-  paySalaries(): void {
-    if (this.accountant) {
-      const salaries = this.accountant.paySalaries();
-      this.departmens.map(
-        department => department.name in salaries && department.updateCredit(salaries[department.name])
-      );
-    }
-    this.updateBalance();
-  }
-
-  updateBalance(): void {
-    let balance = 0;
-    this.departmens.map(department => (balance += department.budget));
-    this.accountant?.updateBalanceValue(balance);
   }
 }
 
-class Department {
-  name: string;
-  domainArea: string;
+// У вас є змінна, яка може бути одного з декількох типів (наприклад, рядок чи число). Напишіть функцію, яка приймає цю змінну і виконує довільні операції, специфічні для кожного з типів.
 
-  employees: Employee[] = [];
-
-  debit: number;
-  credit: number;
-
-  get budget(): number {
-    return this.debit - this.credit;
-  }
-
-  constructor(name: string, domainArea: string, debit: number, credit: number) {
-    this.name = name;
-    this.domainArea = domainArea;
-    this.debit = debit;
-    this.credit = credit;
-  }
-
-  updateCredit(value: number): void {
-    this.credit += value;
-  }
-
-  addEmployee(employee: Employee): void {
-    this.employees.push(employee);
-  }
-
-  removeEmployee(lastName: string): void {
-    this.employees = this.employees.filter(employee => {
-      return lastName !== employee.lastName;
-    });
+function doSomeOperations(value: number | string): void {
+  if (typeof value === 'number') {
+    value += 1;
+  } else {
+    value.toLocaleLowerCase();
   }
 }
 
-class Accounting extends Department {
-  name: string = 'Accouning';
-  domainArea: string = 'Accouning';
-  employeesOnTheBalance: Employee[] = [];
-  departmentsOnTheBalance: Department[] = [];
-  balance: number = 0;
+// Створіть захисник типу, який буде перевіряти, чи передано значення функцією. Потім напишіть функцію, яка використовує цей гард для звуження типу змінної і викликає передану функцію, якщо вона існує.
 
-  takeOntheBalance(item: Employee | Department): void {
-    if (item instanceof Employee) {
-      this.employeesOnTheBalance.push(item);
-      if (!this.departmentsOnTheBalance.some(department => department.name === item.department.name)) {
-        this.takeOntheBalance(item.department);
-      }
-    } else {
-      this.departmentsOnTheBalance.push(item);
-    }
-  }
+function isFunction(property: unknown): property is Function {
+  return property instanceof Function;
+}
 
-  removeFromBalance(item: Employee | Department): void {
-    if (item instanceof Employee) {
-      this.employeesOnTheBalance = this.employeesOnTheBalance.filter(employee => employee.lastName !== item.lastName);
-
-      if (this.departmentsOnTheBalance.filter(department => department.name === item.department.name).length === 1) {
-        this.removeFromBalance(item.department);
-      }
-    } else {
-      this.departmentsOnTheBalance = this.departmentsOnTheBalance.filter(department => department.name !== item.name);
-    }
-  }
-
-  paySalaries(): { [key: string]: number } {
-    let balance = {};
-
-    this.departmentsOnTheBalance.map(department => {
-      let employeeSalaries = 0;
-
-      this.employeesOnTheBalance
-        .filter(employee => employee.department.name === department.name)
-        .map(employee => (employeeSalaries += employee.salary));
-
-      balance = { ...balance, [department.name]: employeeSalaries };
-    });
-    return balance;
-  }
-
-  updateBalanceValue(value: number): void {
-    this.balance = value;
+function handleFunction(property: Function): void {
+  if (isFunction(property)) {
+    property();
   }
 }
 
-class PreHiredEmployee {
-  firstName: string;
-  lastName: string;
-  bankAccountNumber: string;
-  salary: number;
+// Створіть класи з ієрархією успадкування і потім напишіть функцію, яка використовує захисник типу для звуження типу об'єктів, що базуються на цій ієрархії.
 
-  constructor(firstName: string, lastName: string, bankAccountNumber: string, salary: number) {
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.bankAccountNumber = bankAccountNumber;
-    this.salary = salary;
-  }
+class Person {
+  name: string = 'Olha';
+  age: number = 30;
 }
 
-enum Status {
-  Active = 'active',
-  InActive = 'inactive',
-  OnUnpaidLeave = 'on unpaid leave',
+class Women extends Person {
+  doMakeUp(): void {}
 }
 
-class Employee {
-  firstName: string;
-  lastName: string;
-  paymentInformation: string;
-  salary: number;
-  status: Status;
-  department: Department;
+class TransgenderWomen extends Women {
+  toHaveASexChangeOperation(): void {}
+}
 
-  constructor(
-    firstName: string,
-    lastName: string,
-    paymentInformation: string,
-    salary: number,
-    status: Status,
-    department: Department
-  ) {
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.paymentInformation = paymentInformation;
-    this.salary = salary;
-    this.status = status;
-    this.department = department;
+function f(person: Person | Women | TransgenderWomen): void {
+  if (person instanceof TransgenderWomen) {
+    person.toHaveASexChangeOperation;
+  } else if (person instanceof Women) {
+    person.doMakeUp;
+  } else {
+    person.age;
   }
 }
