@@ -1,89 +1,80 @@
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-// 1. Напишіть функцію isString, яка буде перевіряти, чи передано значення рядком. Потім використовуйте її для звуження типу змінної.
+// 1
 
-function isString(value: unknown): value is string {
-  return typeof value === 'string';
+interface ICalculator {
+  a: number;
+  b: number;
+
+  addition(): number;
+  subtraction(): number;
+  multiplication(): number;
+  division(): number;
 }
-function testIsString(value: string | number): string {
-  if (isString(value)) {
-    return 'hohohoho';
+
+class Calculator implements ICalculator {
+  a: number;
+  b: number;
+
+  constructor(a: number, b: number) {
+    this.a = a;
+    this.b = b;
   }
-  return 'brrrr';
-}
 
-// 2. У вас є масив з елементами різних типів. Напишіть функцію, яка приймає цей масив і фільтрує його так, щоб у підсумку в ньому залишилися лише рядки. Використовуйте захисника типу для цього завдання.
+  addition(): number {
+    return this.a + this.b;
+  }
 
-function arrayFilterAsString(arr: unknown[]): string[] {
-  return arr.filter(isString);
-}
+  subtraction(): number {
+    return this.a - this.b;
+  }
 
-// 3. У вас є об'єкт, який може містити довільні властивості. Напишіть функцію, яка приймає цей об'єкт і повертає значення однієї з властивостей, якщо вона існує і має певний тип.
-type ParamType = string | number | boolean | Function | symbol | undefined | object | bigint;
+  multiplication(): number {
+    return this.a * this.b;
+  }
 
-function getValue(obj: { [key: string]: ParamType }, property: string, type: ParamType): ParamType | void {
-  if (property in obj && typeof obj[property] === type) return obj[property];
-}
-
-// 4. Створіть кілька захисників типу, кожен з яких перевіряє певний аспект об'єкта (наприклад, наявність певної властивості або її тип). Потім напишіть функцію, яка використовує цих захисників у комбінації для звуження типу об'єкта до більш конкретного типу.
-
-function isStringV(value: unknown): value is String {
-  return typeof value === 'string';
-}
-
-function isNumber(value: unknown): value is Number {
-  return typeof value === 'number';
-}
-
-function filterObject(obj: { [key: string]: unknown }): void {
-  if (isStringV(obj['name']) && isNumber(obj['age'])) {
-    // Object is valid
+  division(): number {
+    return this.a / this.b;
   }
 }
 
-// 5. У вас є змінна, яка може бути одного з декількох типів (наприклад, рядок чи число). Напишіть функцію, яка приймає цю змінну і виконує довільні операції, специфічні для кожного з типів.
+const calculator = new Calculator(1, 2);
 
-function doSomeOperations(value: number | string): void {
-  if (typeof value === 'number') {
-    value += 1;
-  } else {
-    value.toLocaleLowerCase();
+function calculation(obj: Calculator): number {
+  return obj.division();
+}
+
+calculation(calculator);
+
+// 2
+
+interface IBook extends IBookService {
+  name: string;
+  autor: IAuthor;
+}
+interface IAuthor {
+  name: string;
+}
+interface IBookService {
+  getAutorInfo(): string;
+  getBookInfo(): string;
+}
+
+class Book implements IBook {
+  name: string;
+  autor: IAuthor;
+
+  constructor(name: string, autor: IAuthor) {
+    this.name = name;
+    this.autor = autor;
+  }
+
+  getBookInfo(): string {
+    return this.name;
+  }
+
+  getAutorInfo(): string {
+    return this.autor.name;
   }
 }
 
-// 6. Створіть захисник типу, який буде перевіряти, чи передано значення функцією. Потім напишіть функцію, яка використовує цей гард для звуження типу змінної і викликає передану функцію, якщо вона існує.
-
-function isFunction(property: unknown): property is Function {
-  return property instanceof Function;
-}
-
-function handleFunction(property: () => void): void {
-  if (isFunction(property)) {
-    property();
-  }
-}
-
-// 7. Створіть класи з ієрархією успадкування і потім напишіть функцію, яка використовує захисник типу для звуження типу об'єктів, що базуються на цій ієрархії.
-
-class Person {
-  name: string = 'Olha';
-  age: number = 30;
-}
-
-class Women extends Person {
-  doMakeUp(): void {}
-}
-
-class TransgenderWomen extends Women {
-  toHaveASexChangeOperation(): void {}
-}
-
-function f(person: Person | Women | TransgenderWomen): void {
-  if (person instanceof TransgenderWomen) {
-    person.toHaveASexChangeOperation;
-  } else if (person instanceof Women) {
-    person.doMakeUp;
-  } else {
-    person.age;
-  }
-}
+const book = new Book('book', { name: 'autor' });
+book.getAutorInfo;
