@@ -1,80 +1,69 @@
 // 1
 
 interface ICalculator {
-  a: number;
-  b: number;
+  addition(a: number, b: number): number;
+  subtraction(a: number, b: number): number;
+  multiplication(a: number, b: number): number;
+  division(a: number, b: number): number;
+}
 
-  addition(): number;
-  subtraction(): number;
-  multiplication(): number;
-  division(): number;
+enum CalculatorOperationEnum {
+  ADDITION = 'addition',
+  SUBSTRACTION = 'subtraction',
+  MULTIPLICATION = 'multiplication',
+  DIVISION = 'division',
 }
 
 class Calculator implements ICalculator {
-  a: number;
-  b: number;
-
-  constructor(a: number, b: number) {
-    this.a = a;
-    this.b = b;
+  addition(a: number, b: number): number {
+    return a + b;
   }
 
-  addition(): number {
-    return this.a + this.b;
+  subtraction(a: number, b: number): number {
+    return a - b;
   }
 
-  subtraction(): number {
-    return this.a - this.b;
+  multiplication(a: number, b: number): number {
+    return a * b;
   }
 
-  multiplication(): number {
-    return this.a * this.b;
-  }
-
-  division(): number {
-    return this.a / this.b;
+  division(a: number, b: number): number {
+    return a / b;
   }
 }
 
-const calculator = new Calculator(1, 2);
+const calculator = new Calculator();
 
-function calculation(obj: Calculator): number {
-  return obj.division();
+function calculate(calculator: ICalculator, a: number, b: number, operation: CalculatorOperationEnum): number {
+  return calculator[operation](a, b);
 }
 
-calculation(calculator);
+calculate(calculator, 1, 2, CalculatorOperationEnum.ADDITION);
 
 // 2
 
-interface IBook extends IBookService {
+interface IBook {
   name: string;
-  autor: IAuthor;
+  sites: number;
 }
 interface IAuthor {
   name: string;
 }
+
+type NoValueErrorMessage = string;
+const ErrorMessage: string = 'There is no item with this name';
+
 interface IBookService {
-  getAutorInfo(): string;
-  getBookInfo(): string;
+  getAutorInfo(author: string, authors: IAuthor[]): IAuthor | NoValueErrorMessage;
+  getBookInfo(book: string, books: IBook[]): IBook | NoValueErrorMessage;
 }
 
-class Book implements IBook {
-  name: string;
-  autor: IAuthor;
+const bookService: IBookService = {
+  getBookInfo(book: string, books: IBook[]): IBook | NoValueErrorMessage {
+    return books.find(item => item.name === book) ?? ErrorMessage;
+  },
 
-  constructor(name: string, autor: IAuthor) {
-    this.name = name;
-    this.autor = autor;
-  }
-
-  getBookInfo(): string {
-    return this.name;
-  }
-
-  getAutorInfo(): string {
-    return this.autor.name;
-  }
-}
-
-const book = new Book('book', { name: 'autor' });
-book.getAutorInfo;
+  getAutorInfo(autor: string, authors: IAuthor[]): IAuthor | NoValueErrorMessage {
+    return authors.find(item => item.name === autor) ?? ErrorMessage;
+  },
+};
