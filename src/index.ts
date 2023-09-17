@@ -51,7 +51,7 @@ interface IAuthor {
 }
 
 type NoValueErrorMessage = string;
-const ErrorMessage: string = 'There is no item with this name';
+const ErrorMessage: NoValueErrorMessage = 'There is no item with this name';
 
 interface IBookService {
   getAutorInfo(author: string, authors: IAuthor[]): IAuthor | NoValueErrorMessage;
