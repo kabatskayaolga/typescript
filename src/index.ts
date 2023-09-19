@@ -43,27 +43,29 @@ calculate(calculator, 1, 2, CalculatorOperationEnum.ADDITION);
 // 2
 
 interface IBook {
+  id: string;
   name: string;
   sites: number;
 }
 interface IAuthor {
+  id: string;
   name: string;
 }
 
-type NoValueErrorMessage = string;
-const ErrorMessage: NoValueErrorMessage = 'There is no item with this name';
-
 interface IBookService {
-  getAutorInfo(author: string, authors: IAuthor[]): IAuthor | NoValueErrorMessage;
-  getBookInfo(book: string, books: IBook[]): IBook | NoValueErrorMessage;
+  getAutorInfo(author: string): IAuthor | undefined;
+  getBookInfo(book: string): IBook | undefined;
 }
 
-const bookService: IBookService = {
-  getBookInfo(book: string, books: IBook[]): IBook | NoValueErrorMessage {
-    return books.find(item => item.name === book) ?? ErrorMessage;
-  },
+class bookService implements IBookService {
+  books!: IBook[];
+  authors!: IAuthor[];
 
-  getAutorInfo(autor: string, authors: IAuthor[]): IAuthor | NoValueErrorMessage {
-    return authors.find(item => item.name === autor) ?? ErrorMessage;
-  },
+  getBookInfo(book: string): IBook | undefined {
+    return this.books.find(item => item.id === book);
+  }
+
+  getAutorInfo(autor: string): IAuthor | undefined {
+    return this.authors.find(item => item.id === autor);
+  }
 };
