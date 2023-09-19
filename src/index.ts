@@ -53,6 +53,8 @@ interface IAuthor {
 }
 
 interface IBookService {
+  books: IBook[];
+  authors: IAuthor[];
   getAutorInfo(author: string): IAuthor | undefined;
   getBookInfo(book: string): IBook | undefined;
 }
@@ -69,3 +71,17 @@ class bookService implements IBookService {
     return this.authors.find(item => item.id === autor);
   }
 };
+
+
+// const bookService: IBookService = {
+//   books: <IBook[]>[],
+//   authors:  <IBook[]>[],
+
+//   getBookInfo(book: string): IBook | undefined {
+//     return this.books.find(item => item.id === book); // нужно типизовать this
+//   },
+
+//   getAutorInfo(autor: string): IAuthor | undefined {
+//     return this.authors.find(item => item.id === autor);
+//   }
+// };
