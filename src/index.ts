@@ -1,87 +1,77 @@
-// 1
-
-interface ICalculator {
-  addition(a: number, b: number): number;
-  subtraction(a: number, b: number): number;
-  multiplication(a: number, b: number): number;
-  division(a: number, b: number): number;
+abstract class Figure {
+  constructor(
+    public readonly name: string,
+    public readonly color: string
+  ) {}
+  abstract calculateArea(): number;
 }
 
-enum CalculatorOperationEnum {
-  ADDITION = 'addition',
-  SUBSTRACTION = 'subtraction',
-  MULTIPLICATION = 'multiplication',
-  DIVISION = 'division',
+interface IFormula {
+  print(): string;
 }
 
-class Calculator implements ICalculator {
-  addition(a: number, b: number): number {
-    return a + b;
+class Circle extends Figure {
+  constructor(
+    name: string,
+    color: string,
+    public radius: number
+  ) {
+    super(name, color);
   }
-
-  subtraction(a: number, b: number): number {
-    return a - b;
-  }
-
-  multiplication(a: number, b: number): number {
-    return a * b;
-  }
-
-  division(a: number, b: number): number {
-    return a / b;
+  calculateArea(): number {
+    return Math.PI * Math.pow(this.radius, 2);
   }
 }
 
-const calculator = new Calculator();
-
-function calculate(calculator: ICalculator, a: number, b: number, operation: CalculatorOperationEnum): number {
-  return calculator[operation](a, b);
+class Rectangle extends Figure implements IFormula {
+  constructor(
+    name: string,
+    color: string,
+    public length: number,
+    public width: number
+  ) {
+    super(name, color);
+  }
+  print(): string {
+    return 'Area = length * width';
+  }
+  calculateArea(): number {
+    return this.length * this.width;
+  }
 }
 
-calculate(calculator, 1, 2, CalculatorOperationEnum.ADDITION);
-
-// 2
-
-interface IBook {
-  id: string;
-  name: string;
-  sites: number;
-}
-interface IAuthor {
-  id: string;
-  name: string;
-}
-
-interface IBookService {
-  books: IBook[];
-  authors: IAuthor[];
-  getAutorInfo(author: string): IAuthor | undefined;
-  getBookInfo(book: string): IBook | undefined;
+class Square extends Figure implements IFormula {
+  constructor(
+    name: string,
+    color: string,
+    public width: number
+  ) {
+    super(name, color);
+  }
+  print(): string {
+    return 'Area = width * width';
+  }
+  calculateArea(): number {
+    return Math.pow(this.width, 2);
+  }
 }
 
-class bookService implements IBookService {
-  books!: IBook[];
-  authors!: IAuthor[];
-
-  getBookInfo(book: string): IBook | undefined {
-    return this.books.find(item => item.id === book);
+class Triangle extends Figure {
+  constructor(
+    name: string,
+    color: string,
+    public side1: number,
+    public side2: number,
+    public side3: number
+  ) {
+    super(name, color);
   }
 
-  getAutorInfo(autor: string): IAuthor | undefined {
-    return this.authors.find(item => item.id === autor);
+  calculateArea(): number {
+    const semiPerimeter = (this.side1 + this.side2 + this.side3) / 2;
+
+    return Math.sqrt(
+      semiPerimeter * (semiPerimeter - this.side1) * (semiPerimeter - this.side2) * (semiPerimeter - this.side3)
+    );
   }
-};
-
-
-// const bookService: IBookService = {
-//   books: <IBook[]>[],
-//   authors:  <IBook[]>[],
-
-//   getBookInfo(book: string): IBook | undefined {
-//     return this.books.find(item => item.id === book); // нужно типизовать this
-//   },
-
-//   getAutorInfo(autor: string): IAuthor | undefined {
-//     return this.authors.find(item => item.id === autor);
-//   }
-// };
+}
