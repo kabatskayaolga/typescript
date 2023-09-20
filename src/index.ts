@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 abstract class Figure {
   constructor(
     public readonly name: string,
     public readonly color: string
-  ) {}
+  ) { }
   abstract calculateArea(): number;
 }
 
@@ -18,6 +19,7 @@ class Circle extends Figure {
   ) {
     super(name, color);
   }
+
   calculateArea(): number {
     return Math.PI * Math.pow(this.radius, 2);
   }
@@ -32,9 +34,11 @@ class Rectangle extends Figure implements IFormula {
   ) {
     super(name, color);
   }
+
   print(): string {
     return 'Area = length * width';
   }
+
   calculateArea(): number {
     return this.length * this.width;
   }
@@ -48,9 +52,11 @@ class Square extends Figure implements IFormula {
   ) {
     super(name, color);
   }
+
   print(): string {
     return 'Area = width * width';
   }
+
   calculateArea(): number {
     return Math.pow(this.width, 2);
   }
