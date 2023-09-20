@@ -13,92 +13,62 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-function isPreHiredEmployee(employee) {
-    return employee instanceof PreHiredEmployee;
-}
-function isDepartmentAccounting(department) {
-    return department instanceof Accounting;
-}
-var Company = /** @class */ (function () {
-    function Company(name) {
-        this.departmens = [];
-        this.preHiredEmployees = [];
-        this.allEmployees = []; //// ???????
-        this.name = name;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
     }
-    Company.prototype.addDepartment = function (department) {
-        this.departmens.push(department);
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
+var Utils = /** @class */ (function () {
+    function Utils() {
+    }
+    Utils.isPreHiredEmployee = function (employee) {
+        return employee instanceof PreHiredEmployee;
     };
-    Company.prototype.removeDepartment = function (departmentName) {
-        this.departmens.filter(function (department) { return department.name !== departmentName; });
+    Utils.isEmployee = function (employee) {
+        return employee instanceof Employee;
     };
-    Company.prototype.addPreHiredEmployees = function (employee) {
-        this.preHiredEmployees.push(employee);
+    Utils.isDepartment = function (employee) {
+        return employee instanceof Department;
     };
-    Company.prototype.addEmployee = function (employee, departmentName, status) {
-        var department = this.departmens.find(function (department) { return departmentName === department.name; });
-        if (department) {
-            if (isPreHiredEmployee(employee)) {
-                var firstName = employee.firstName, lastName = employee.lastName, bankAccountNumber = employee.bankAccountNumber, salary = employee.salary;
-                this.allEmployees.push(new Employee(firstName, lastName, bankAccountNumber, salary, Status.Active, department));
-                department.addEmployee(new Employee(firstName, lastName, bankAccountNumber, salary, Status.Active, department));
-                // department.addEmployee({
-                //   ...employee,
-                //   paymentInformation: employee.bankAccountNumber,
-                //   status: status,
-                //   department: department,
-                // } as Employee);
-                this.preHiredEmployees.filter(function (preHiredEmployee) { return employee.lastName !== preHiredEmployee.lastName; });
-            }
-            else {
-                if (employee.department.name !== department.name) {
-                    department.addEmployee(employee);
-                    var oldDepartment = this.departmens.find(function (department) { return employee.department.name === department.name; });
-                    oldDepartment === null || oldDepartment === void 0 ? void 0 : oldDepartment.removeEmployee(employee.lastName);
-                }
-                else {
-                    this.allEmployees.push(employee);
-                }
-            }
-        }
-    };
-    Company.prototype.removeEmployee = function (employee) {
-        if (isPreHiredEmployee(employee)) {
-            this.allEmployees.filter(function (item) { return item.lastName !== employee.lastName; });
-        }
-        else {
-            var department_1 = this.departmens.find(function (department) { return employee.department.name === department.name; });
-            department_1 === null || department_1 === void 0 ? void 0 : department_1.removeEmployee(employee.lastName);
-        }
-    };
-    Company.prototype.updateBalance = function () {
-        this.departmens.some(function (department) { return 'paySalaries' in department; });
-        console.log(this.departmens.some(function (department) { return 'paySalaries' in department; }));
-    };
-    return Company;
+    return Utils;
 }());
+var Status;
+(function (Status) {
+    Status["Active"] = "active";
+    Status["InActive"] = "inactive";
+    Status["OnUnpaidLeave"] = "on unpaid leave";
+})(Status || (Status = {}));
 var Department = /** @class */ (function () {
-    function Department(name, domainArea, debit, credit) {
-        this.employees = [];
+    function Department(name, domainArea) {
         this.name = name;
         this.domainArea = domainArea;
-        this.debit = debit;
-        this.credit = credit;
+        this.employees = [];
+        this.budget = {
+            debit: 0,
+            credit: 0,
+        };
     }
-    Object.defineProperty(Department.prototype, "budget", {
+    Object.defineProperty(Department.prototype, "balance", {
         get: function () {
-            return this.debit - this.credit;
+            return this.budget.debit - this.budget.credit;
         },
         enumerable: false,
         configurable: true
     });
-    Department.prototype.updateCredit = function (value) {
-        this.credit = value;
-    };
     Department.prototype.addEmployee = function (employee) {
-        this.employees.push(employee);
+        if (Utils.isPreHiredEmployee(employee)) {
+            var newEmployee = new Employee(employee.firstName, employee.lastName, employee.bankAccountNumber, employee.salary);
+            this.employees.push(newEmployee);
+        }
+        else {
+            this.budget.credit -= employee.salary;
+            employee.departmant = this;
+            this.employees.push(employee);
+        }
     };
     Department.prototype.removeEmployee = function (lastName) {
         this.employees = this.employees.filter(function (employee) {
@@ -107,61 +77,21 @@ var Department = /** @class */ (function () {
     };
     return Department;
 }());
-var Accounting = /** @class */ (function (_super) {
-    __extends(Accounting, _super);
-    function Accounting() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.name = 'Accouning';
-        _this.domainArea = 'Accouning';
-        _this.employeesOnTheBalance = [];
-        _this.departmentsOnTheBalance = [];
-        return _this;
+var Company = /** @class */ (function () {
+    function Company(name) {
+        this.name = name;
+        this.departmens = [];
+        this.preHiredEmployees = [];
     }
-    // set balance(departmens: Department[]) {
-    //   let number = 0;
-    //   departmens.map(item => {
-    //     number += item.budget;
-    //   });
-    //   number;
-    // }
-    Accounting.prototype.takeOntheBalance = function (item) {
-        if (item instanceof Employee) {
-            this.employeesOnTheBalance.push(item);
-            if (!this.departmentsOnTheBalance.some(function (department) { return department.name === item.department.name; })) {
-                this.takeOntheBalance(item.department);
-            }
-        }
-        else {
-            this.departmentsOnTheBalance.push(item);
-        }
-    };
-    Accounting.prototype.removeFromBalance = function (item) {
-        if (item instanceof Employee) {
-            this.employeesOnTheBalance = this.employeesOnTheBalance.filter(function (employee) { return employee.lastName !== item.lastName; });
-            if (this.departmentsOnTheBalance.filter(function (department) { return department.name === item.department.name; }).length === 1) {
-                this.removeFromBalance(item.department);
-            }
-        }
-        else {
-            this.departmentsOnTheBalance = this.departmentsOnTheBalance.filter(function (department) { return department.name !== item.name; });
-        }
-    };
-    Accounting.prototype.paySalaries = function () {
-        var _this = this;
-        var balance = this.departmentsOnTheBalance.map(function (department) {
-            var employeeSalaries = 0;
-            _this.employeesOnTheBalance
-                .filter(function (employee) { return employee.department.name === department.name; })
-                .map(function (employee) { return (employeeSalaries += employee.salary); });
-            return {
-                department: department.name,
-                balance: department.budget - employeeSalaries,
-            };
-        });
-        return balance;
-    };
-    return Accounting;
-}(Department));
+    Object.defineProperty(Company.prototype, "staff", {
+        get: function () {
+            return __spreadArray(__spreadArray([], this.departmens.flatMap(function (x) { return x.employees; }), true), this.preHiredEmployees, true);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    return Company;
+}());
 var PreHiredEmployee = /** @class */ (function () {
     function PreHiredEmployee(firstName, lastName, bankAccountNumber, salary) {
         this.firstName = firstName;
@@ -171,49 +101,62 @@ var PreHiredEmployee = /** @class */ (function () {
     }
     return PreHiredEmployee;
 }());
-var Status;
-(function (Status) {
-    Status["Active"] = "active";
-    Status["InActive"] = "inactive";
-    Status["OnUnpaidLeave"] = "on unpaid leave";
-})(Status || (Status = {}));
 var Employee = /** @class */ (function () {
-    function Employee(firstName, lastName, paymentInformation, salary, status, department) {
+    function Employee(firstName, lastName, paymentInformation, salary) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.paymentInformation = paymentInformation;
         this.salary = salary;
-        this.status = status;
-        this.department = department;
+        this.status = Status.OnUnpaidLeave;
     }
     return Employee;
 }());
-//////////////////////////////////////////////////
-var company = new Company('Test');
-var department = new Department('string', 'string', 10000, 1000);
-company.addDepartment(department);
-department.budget;
-var accountant = new Accounting('accounssss', 'dsds', 100000, 15555);
-company.addDepartment(accountant);
-var employee = new Employee('firstName1', 'lastname1', 'paymentInformation1', 2004, Status.Active, department);
-company.addEmployee(employee, 'string', Status.Active);
-var prehiredEmplo = new PreHiredEmployee('firstName2', 'lastname2', 'paymentInformation2', 2004);
-company.addEmployee(prehiredEmplo, 'string', Status.InActive);
-// console.log(company);
-// console.log('------');
-// console.log(company.departmens[1]);
-// console.log('------');
-// console.log(company.departmens[0]);
-company.addEmployee(company.allEmployees[0], 'Accouning', Status.InActive);
-// company.removeEmployee(employee);
-// console.log(company);
-// console.log('------');
-// console.log(company.departmens[1]);
-// console.log('------');
-// console.log(company.departmens[0]);
-accountant.takeOntheBalance(employee);
-console.log(accountant);
-console.log('------');
-accountant.removeFromBalance(employee);
-console.log(accountant);
-// console.log(company.departmens);
+var Accounting = /** @class */ (function (_super) {
+    __extends(Accounting, _super);
+    function Accounting() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.name = 'Accouning';
+        _this.domainArea = 'Accouning';
+        _this.employeesOnTheBalance = [];
+        return _this;
+    }
+    Accounting.prototype.addToBalance = function (entity) {
+        var _a;
+        if (Utils.isDepartment(entity)) {
+            (_a = this.employeesOnTheBalance).push.apply(_a, entity.employees);
+        }
+        else {
+            this.employeesOnTheBalance.push(entity);
+        }
+    };
+    Accounting.prototype.removeFromBalance = function (entity) {
+        if (Utils.isDepartment(entity)) {
+            this.employeesOnTheBalance = this.employeesOnTheBalance.filter(function (x) { var _a; return Utils.isPreHiredEmployee(x) || (Utils.isEmployee(x) && ((_a = x.departmant) === null || _a === void 0 ? void 0 : _a.name) !== entity.name); });
+        }
+        else {
+            this.employeesOnTheBalance = this.employeesOnTheBalance.filter(function (x) { return x.firstName !== entity.firstName; });
+        }
+    };
+    Accounting.prototype.salaryPayment = function () {
+        for (var _i = 0, _a = this.employeesOnTheBalance; _i < _a.length; _i++) {
+            var entity = _a[_i];
+            if (Utils.isPreHiredEmployee(entity)) {
+                this.externalPayment(entity);
+            }
+            else {
+                if (entity.status !== Status.Active)
+                    continue;
+                this.internalPayment(entity);
+            }
+        }
+    };
+    Accounting.prototype.internalPayment = function (employee) {
+        if (employee.departmant) {
+            employee.departmant.budget.credit -= employee.salary;
+        }
+    };
+    Accounting.prototype.externalPayment = function (preHire) {
+        this.budget.credit -= preHire.salary;
+    };
+    return Accounting;
+}(Department));
