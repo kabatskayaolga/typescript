@@ -7,8 +7,8 @@ class Utils {
     return employee instanceof Employee;
   }
 
-  static isDepartment(employee: unknown): employee is Department {
-    return employee instanceof Department;
+  static isDepartment(department: unknown): department is Department {
+    return department instanceof Department;
   }
 }
 
@@ -19,15 +19,15 @@ interface ICompany {
   staff: (PreHiredEmployee | Employee)[];
 }
 
-interface IAccouning {
-  employeesOnTheBalance: (Employee | PreHiredEmployee)[];
+// interface IAccouning {
+//   employeesOnTheBalance: (Employee | PreHiredEmployee)[];
 
-  addToBalance(entity: Department | Employee): void;
-  removeFromBalance(entity: Department | Employee): void;
-  salaryPayment(): void;
-  internalPayment(employee: Employee): void;
-  externalPayment(preHire: PreHiredEmployee): void;
-}
+//   addToBalance(entity: Department | Employee): void;
+//   removeFromBalance(entity: Department | Employee): void;
+//   salaryPayment(): void;
+//   internalPayment(employee: Employee): void;
+//   externalPayment(preHire: PreHiredEmployee): void;
+// }
 
 interface IEmployeeBasicInfo {
   readonly firstName: string;
@@ -118,10 +118,10 @@ class Employee implements IEmployeeBasicInfo {
   ) { }
 }
 
-class Accounting extends Department implements IAccouning {
+class Accounting extends Department {
   name: string = 'Accouning';
   domainArea: string = 'Accouning';
-  employeesOnTheBalance: (Employee | PreHiredEmployee)[] = [];
+  private employeesOnTheBalance: (Employee | PreHiredEmployee)[] = [];
 
   addToBalance(entity: Department | Employee | PreHiredEmployee): void {
     if (Utils.isDepartment(entity)) {
@@ -141,7 +141,7 @@ class Accounting extends Department implements IAccouning {
     }
   }
 
-  salaryPayment(): void {
+  private salaryPayment(): void {
     for (const entity of this.employeesOnTheBalance) {
       if (Utils.isPreHiredEmployee(entity)) {
         this.externalPayment(entity);
@@ -152,13 +152,13 @@ class Accounting extends Department implements IAccouning {
     }
   }
 
-  internalPayment(employee: Employee): void {
+  private internalPayment(employee: Employee): void {
     if (employee.departmant) {
       employee.departmant.budget.credit -= employee.salary;
     }
   }
 
-  externalPayment(preHire: PreHiredEmployee): void {
+  private externalPayment(preHire: PreHiredEmployee): void {
     this.budget.credit -= preHire.salary;
   }
 }
