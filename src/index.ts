@@ -1,83 +1,73 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-abstract class Figure {
-  constructor(
-    public readonly name: string,
-    public readonly color: string
-  ) { }
-  abstract calculateArea(): number;
+// Визначте інтерфейс, який використовує сигнатуру індексу з типами об'єднання. Наприклад, тип значення для кожного ключа може бути число | рядок.
+type A = string | number;
+
+interface ITest1 {
+  [key: string]: A;
 }
 
-interface IFormula {
-  print(): string;
+// Створіть інтерфейс, у якому типи значень у сигнатурі індексу є функціями.Ключами можуть бути рядки, а значеннями — функції, які приймають будь - які аргументи.
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+type ValueType = string | number | boolean | symbol | Function | undefined | object | bigint;
+type FunctionType = (args: { [key: string]: ValueType }) => ValueType;
+
+interface ITest2 {
+  [key: string]: FunctionType;
 }
 
-class Circle extends Figure {
-  constructor(
-    name: string,
-    color: string,
-    public radius: number
-  ) {
-    super(name, color);
-  }
-
-  calculateArea(): number {
-    return Math.PI * Math.pow(this.radius, 2);
-  }
+// Опишіть інтерфейс, який використовує сигнатуру індексу для опису об'єкта, подібного до масиву. Ключі повинні бути числами, а значення - певного типу.
+interface ITest4 {
+  [key: number]: string;
 }
 
-class Rectangle extends Figure implements IFormula {
-  constructor(
-    name: string,
-    color: string,
-    public length: number,
-    public width: number
-  ) {
-    super(name, color);
-  }
+// Створіть інтерфейс з певними властивостями та індексною сигнатурою.Наприклад, ви можете мати властивості типу name: string та індексну сигнатуру для додаткових динамічних властивостей.
 
-  print(): string {
-    return 'Area = length * width';
-  }
+interface ITest5 {
+  name: string;
 
-  calculateArea(): number {
-    return this.length * this.width;
-  }
+  [key: string]: string | number | boolean;
+  [key: number]: string | number | boolean;
+  [key: symbol]: string | number | boolean;
 }
 
-class Square extends Figure implements IFormula {
-  constructor(
-    name: string,
-    color: string,
-    public width: number
-  ) {
-    super(name, color);
-  }
+// Створіть два інтерфейси, один з індексною сигнатурою, а інший розширює перший, додаючи специфічні властивості.
 
-  print(): string {
-    return 'Area = width * width';
-  }
-
-  calculateArea(): number {
-    return Math.pow(this.width, 2);
-  }
+interface ITest6 {
+  [key: string]: string | number | boolean;
 }
 
-class Triangle extends Figure {
-  constructor(
-    name: string,
-    color: string,
-    public side1: number,
-    public side2: number,
-    public side3: number
-  ) {
-    super(name, color);
-  }
-
-  calculateArea(): number {
-    const semiPerimeter = (this.side1 + this.side2 + this.side3) / 2;
-
-    return Math.sqrt(
-      semiPerimeter * (semiPerimeter - this.side1) * (semiPerimeter - this.side2) * (semiPerimeter - this.side3)
-    );
-  }
+interface ITest7 extends ITest6 {
+  name: string;
+  age: number;
 }
+
+// Напишіть функцію, яка отримує об'єкт з індексною сигнатурою і перевіряє, чи відповідають значення певних ключів певним критеріям (наприклад, чи всі значення є числами).
+
+interface CheckKeysAreStrings {
+  [key: number]: string | number | boolean;
+}
+
+function checkValues(obj: CheckKeysAreStrings, valueType: string): string {
+  for (const key in obj) {
+    if (typeof obj[key] !== valueType) {
+      return `Not all keys are ${valueType}s`;
+    }
+  }
+  return `All keys are ${valueType}s`;
+}
+
+const objWithStrings = {
+  name: 'Olha',
+  surname: 'Kabatska',
+  age: '30',
+};
+
+const objWithNumbers = {
+  2: 20,
+  3: 40,
+  4: 30,
+};
+
+checkValues(objWithStrings, 'string');
+checkValues(objWithNumbers, 'number');
