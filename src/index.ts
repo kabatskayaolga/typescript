@@ -4,6 +4,7 @@ type A = string | number;
 
 interface ITest1 {
   [key: string]: A;
+  [key: number]: A;
 }
 
 // Створіть інтерфейс, у якому типи значень у сигнатурі індексу є функціями.Ключами можуть бути рядки, а значеннями — функції, які приймають будь - які аргументи.
@@ -17,7 +18,7 @@ interface ITest2 {
 }
 
 // Опишіть інтерфейс, який використовує сигнатуру індексу для опису об'єкта, подібного до масиву. Ключі повинні бути числами, а значення - певного типу.
-interface ITest4 {
+interface IObjectLikeArray {
   [key: number]: string;
 }
 
@@ -56,18 +57,3 @@ function checkValues(obj: CheckKeysAreStrings, valueType: string): string {
   }
   return `All keys are ${valueType}s`;
 }
-
-const objWithStrings = {
-  name: 'Olha',
-  surname: 'Kabatska',
-  age: '30',
-};
-
-const objWithNumbers = {
-  2: 20,
-  3: 40,
-  4: 30,
-};
-
-checkValues(objWithStrings, 'string');
-checkValues(objWithNumbers, 'number');
