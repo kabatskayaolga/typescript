@@ -12,7 +12,6 @@ interface ITest1 {
 // eslint-disable-next-line @typescript-eslint/ban-types
 type ValueType = string | number | boolean | symbol | Function | undefined | object | bigint;
 type FunctionType = (args: { [key: string]: ValueType }) => ValueType;
-
 interface ITest2 {
   [key: string]: FunctionType;
 }
