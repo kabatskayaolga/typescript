@@ -1,58 +1,65 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-// Визначте інтерфейс, який використовує сигнатуру індексу з типами об'єднання. Наприклад, тип значення для кожного ключа може бути число | рядок.
-type A = string | number;
+// Фільтрація масиву
 
-interface ITest1 {
-  [key: string]: A;
-  [key: number]: A;
+// Напишіть узагальнену функцію filterArray(array, condition), яка фільтрує масив елементів на основі наданої умови.
+
+function filterArray<T>(array: T[], condition: (args: T) => boolean): T[] {
+  return array.filter(condition);
 }
 
-// Створіть інтерфейс, у якому типи значень у сигнатурі індексу є функціями.Ключами можуть бути рядки, а значеннями — функції, які приймають будь - які аргументи.
+// Узагальнений стек
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-type ValueType = string | number | boolean | symbol | Function | undefined | object | bigint;
-type FunctionType = (args: { [key: string]: ValueType }) => ValueType;
-interface ITest2 {
-  [key: string]: FunctionType;
-}
+// Створіть узагальнений клас Stack, який являє собою стек елементів з методами push, pop і peek.
 
-// Опишіть інтерфейс, який використовує сигнатуру індексу для опису об'єкта, подібного до масиву. Ключі повинні бути числами, а значення - певного типу.
-interface IObjectLikeArray {
-  [key: number]: string;
-}
-
-// Створіть інтерфейс з певними властивостями та індексною сигнатурою.Наприклад, ви можете мати властивості типу name: string та індексну сигнатуру для додаткових динамічних властивостей.
-
-interface ITest5 {
-  name: string;
-
-  [key: string]: string | number | boolean;
-  [key: number]: string | number | boolean;
-  [key: symbol]: string | number | boolean;
-}
-
-// Створіть два інтерфейси, один з індексною сигнатурою, а інший розширює перший, додаючи специфічні властивості.
-
-interface ITest6 {
-  [key: string]: string | number | boolean;
-}
-
-interface ITest7 extends ITest6 {
-  name: string;
-  age: number;
-}
-
-// Напишіть функцію, яка отримує об'єкт з індексною сигнатурою і перевіряє, чи відповідають значення певних ключів певним критеріям (наприклад, чи всі значення є числами).
-
-interface CheckKeysAreStrings {
-  [key: number]: string | number | boolean;
-}
-
-function checkValues(obj: CheckKeysAreStrings, valueType: string): string {
-  for (const key in obj) {
-    if (typeof obj[key] !== valueType) {
-      return `Not all keys are ${valueType}s`;
-    }
+class Stack<T> {
+  elements: T[] = [];
+  push(element: T): void {
+    this.elements.push(element);
   }
-  return `All keys are ${valueType}s`;
+
+  pop(): void {
+    this.elements.pop();
+  }
+
+  peek(): T {
+    return this.elements[this.elements.length - 1];
+  }
+}
+
+// Узагальнений словник
+
+// Створіть узагальнений клас Dictionary, який являє собою словник(асоціативний масив) з методами set, get і has.Обмежте ключі тільки валідними типами для об'єкта
+
+class Dictionary<T = string> {
+  words: Map<string, T> = new Map();
+
+  set<K extends string>(key: K, value: T): void {
+    this.words.set(key, value);
+  }
+
+  get<K extends string>(key: K): T | undefined {
+    return this.words.get(key);
+  }
+
+  has<K extends string>(key: K): boolean {
+    return this.words.has(key);
+  }
+}
+
+type Key = string;
+
+class DictionaryWithObject<T = string> {
+  words: { [key: Key]: T } = {};
+
+  set(key: Key, value: T): void {
+    this.words[key] = value;
+  }
+
+  get(key: Key): T | undefined {
+    return this.words[key];
+  }
+
+  has(key: Key): boolean {
+    return Object.prototype.hasOwnProperty.call(this.words, key);
+  }
 }
