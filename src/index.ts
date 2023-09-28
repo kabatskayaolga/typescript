@@ -21,7 +21,7 @@ class Stack<T> {
     this.elements.pop();
   }
 
-  peek(): T {
+  peek(): T | undefined {
     return this.elements[this.elements.length - 1];
   }
 }
@@ -30,23 +30,23 @@ class Stack<T> {
 
 // Створіть узагальнений клас Dictionary, який являє собою словник(асоціативний масив) з методами set, get і has.Обмежте ключі тільки валідними типами для об'єкта
 
+type Key = string;
+
 class Dictionary<T = string> {
   words: Map<string, T> = new Map();
 
-  set<K extends string>(key: K, value: T): void {
+  set(key: Key, value: T): void {
     this.words.set(key, value);
   }
 
-  get<K extends string>(key: K): T | undefined {
+  get(key: Key): T | undefined {
     return this.words.get(key);
   }
 
-  has<K extends string>(key: K): boolean {
+  has(key: Key): boolean {
     return this.words.has(key);
   }
 }
-
-type Key = string;
 
 class DictionaryWithObject<T = string> {
   words: { [key: Key]: T } = {};
