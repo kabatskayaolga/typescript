@@ -1,65 +1,32 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-// Фільтрація масиву
+// Вам потрібно створити тип DeepReadonly який буде робити доступними тільки для читання навіть властивості вкладених обʼєктів.
 
-// Напишіть узагальнену функцію filterArray(array, condition), яка фільтрує масив елементів на основі наданої умови.
-
-function filterArray<T>(array: T[], condition: (args: T) => boolean): T[] {
-  return array.filter(condition);
+type DeepReadonly<T> = {
+  readonly [K in keyof T]: T[K] | DeepReadonly<T[K]>
 }
 
-// Узагальнений стек
+// Вам потрібно створити тип DeepRequireReadonly який буде робити доступними тільки для читання навіть властивості вкладених обʼєктів та ще й робити їх обовʼязковими.
 
-// Створіть узагальнений клас Stack, який являє собою стек елементів з методами push, pop і peek.
-
-class Stack<T> {
-  elements: T[] = [];
-  push(element: T): void {
-    this.elements.push(element);
-  }
-
-  pop(): void {
-    this.elements.pop();
-  }
-
-  peek(): T | undefined {
-    return this.elements[this.elements.length - 1];
-  }
+type DeepRequireReadonly<T> = {
+  readonly [K in keyof T]-?: T[K] | DeepRequireReadonly<T[K]>
 }
 
-// Узагальнений словник
+// Вам потрібно сворити тип UpperCaseKeys, який буде приводити всі ключи до верхнього регістру.
 
-// Створіть узагальнений клас Dictionary, який являє собою словник(асоціативний масив) з методами set, get і has.Обмежте ключі тільки валідними типами для об'єкта
+type ToUpperCaseKeys<T extends string> = Uppercase<T>
 
-type Key = string;
-
-class Dictionary<T = string> {
-  words: Map<string, T> = new Map();
-
-  set(key: Key, value: T): void {
-    this.words.set(key, value);
-  }
-
-  get(key: Key): T | undefined {
-    return this.words.get(key);
-  }
-
-  has(key: Key): boolean {
-    return this.words.has(key);
-  }
+type UpperCaseKeys<T> = {
+  [K in keyof T & string as ToUpperCaseKeys<K>]: T[K]
 }
 
-class DictionaryWithObject<T = string> {
-  words: { [key: Key]: T } = {};
+// І саме цікаве.Створіть тип ObjectToPropertyDescriptor, який перетворює звичайний обʼєкт на обʼєкт де кожне value є дескриптором.
 
-  set(key: Key, value: T): void {
-    this.words[key] = value;
-  }
+interface IDescriptor<T> {
+  value: T;
+  writable: boolean;
+  enumerable: boolean;
+  configurable: boolean;
+}
 
-  get(key: Key): T | undefined {
-    return this.words[key];
-  }
-
-  has(key: Key): boolean {
-    return Object.prototype.hasOwnProperty.call(this.words, key);
-  }
+type ObjectToPropertyDescriptor<T> = {
+  [K in keyof T]: IDescriptor<T[K]>
 }
