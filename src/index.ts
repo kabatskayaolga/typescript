@@ -1,32 +1,21 @@
-// Вам потрібно створити тип DeepReadonly який буде робити доступними тільки для читання навіть властивості вкладених обʼєктів.
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
-type DeepReadonly<T> = {
-  readonly [K in keyof T]: DeepReadonly<T[K]>
+// Вам потрібно створити умовний тип, що служить для встановлення типу, що повертається з функції.Як параметр типу повинен обов'язково виступати функціональний тип.
+
+type FunctionReturnType<T> = T extends (param: () => infer B) => infer U ? U : undefined;
+
+function funcA(param: () => string): string {
+  return param();
 }
 
-// Вам потрібно створити тип DeepRequireReadonly який буде робити доступними тільки для читання навіть властивості вкладених обʼєктів та ще й робити їх обовʼязковими.
+const foundetType: FunctionReturnType<typeof funcA> = funcA(() => 'string');
 
-type DeepRequireReadonly<T> = {
-  readonly [K in keyof T]-?: DeepRequireReadonly<T[K]>
+// Вам потрібно створити умовний тип, який приймає функціональний тип з одним параметром(або задовільним) та повертає кортеж, де перше значення - це тип, що функція повертає, а другий - тип її параметру
+
+type getTuples<T> = T extends (param: infer V) => infer U ? [U, V] : undefined;
+
+function funcB(param: number): string {
+  return String(param);
 }
 
-// Вам потрібно сворити тип UpperCaseKeys, який буде приводити всі ключи до верхнього регістру.
-
-type ToUpperCaseKeys<T extends string> = Uppercase<T>
-
-type UpperCaseKeys<T> = {
-  [K in keyof T as ToUpperCaseKeys<K & string>]: T[K]
-}
-
-// І саме цікаве.Створіть тип ObjectToPropertyDescriptor, який перетворює звичайний обʼєкт на обʼєкт де кожне value є дескриптором.
-
-interface IDescriptor<T> {
-  value: T;
-  writable: boolean;
-  enumerable: boolean;
-  configurable: boolean;
-}
-
-type ObjectToPropertyDescriptor<T> = {
-  [K in keyof T]: IDescriptor<T[K]>
-}
+let foundetTypeB: getTuples<typeof funcB>; // [string, number]
