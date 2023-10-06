@@ -2,7 +2,7 @@
 
 // Вам потрібно створити умовний тип, що служить для встановлення типу, що повертається з функції.Як параметр типу повинен обов'язково виступати функціональний тип.
 
-type FunctionReturnType<T> = T extends (param: () => infer B) => infer U ? U : undefined;
+type FunctionReturnType<T> = T extends (param: infer V) => infer U ? U : undefined;
 
 function funcA(param: () => string): string {
   return param();
