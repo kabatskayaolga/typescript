@@ -34,13 +34,14 @@ function uniqueGenerator(inputArr: number[]): number[][] {
   const result: number[][] = [];
 
   function generate(workingArray: number[], generatedArray: number[] = []): void {
-    if (workingArray.length) {
-      workingArray.forEach((item, i) => {
-        generate([...workingArray.slice(0, i), ...workingArray.slice(i + 1)], [...generatedArray, item]);
-      });
-    } else {
-      result.push(generatedArray);
-    }
+    workingArray.length === 0 && result.push(generatedArray);
+
+    workingArray.map((item, index) => {
+      const newWorkingArray = [...workingArray.slice(0, index), ...workingArray.slice(index + 1)];
+      const newGeneratesArray = [...generatedArray, item];
+
+      generate(newWorkingArray, newGeneratesArray);
+    });
   }
 
   generate(inputArr);
