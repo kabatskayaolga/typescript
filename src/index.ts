@@ -15,11 +15,13 @@ function isPalindrom(number: string): boolean {
 }
 
 function getPalindrom(number: number, step = 1): IPalindrom {
-  if (number === 196) return { result: null, step: null };
-
-  const reverseNumber = +String(number).split('').reverse().join('');
-  const sum = number + reverseNumber;
-  return isPalindrom(String(sum)) ? { result: sum, step: step } : getPalindrom(sum, ++step);
+  try {
+    const reverseNumber = +String(number).split('').reverse().join('');
+    const sum = number + reverseNumber;
+    return isPalindrom(String(sum)) ? { result: sum, step: step } : getPalindrom(sum, ++step);
+  } catch (err) {
+    return { result: null, step: null };
+  }
 }
 
 getPalindrom(96);
