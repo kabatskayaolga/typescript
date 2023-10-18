@@ -66,7 +66,7 @@ function DeprecatedMethod(reason: string, replacedMethod?: string) {
 class Validation {
   @Email
   @MinLength(55)
-  @MaxLength(30)
+  @MaxLength(5)
   email: string;
 
   constructor(email: string) {
