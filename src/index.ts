@@ -7,6 +7,18 @@
 
 // Створіть декоратори MinLength, MaxLength та Email
 
+function Expose(lengthMin: number, lengthMax: number) {
+  const minLegth = MinLength(lengthMin);
+  const maxLength = MaxLength(lengthMax);
+  const email = Email;
+
+  return function (target: any, key: string) {
+    maxLength(target, key);
+    minLegth(target, key);
+    email(target, key);
+  };
+}
+
 function MinLength(length: number) {
   return function <T extends {}>(target: T, propertyKey: string): void | any {
     let value: string;
@@ -15,7 +27,7 @@ function MinLength(length: number) {
         return value;
       },
       set(val: string) {
-        console.log('MinLength')
+        console.log('MinLength');
         if (val.length < length) throw new Error(`Number of symbols can't be less than ${length}`);
         value = val;
       },
@@ -33,7 +45,7 @@ function MaxLength(length: number) {
         return value;
       },
       set(val: string) {
-        console.log('MaxLength')
+        console.log('MaxLength');
         if (val.length > length) throw new Error(`Number of symbols can't be more than ${length}`);
         value = val;
       },
@@ -50,7 +62,7 @@ function Email<T extends {}>(target: T, propertyKey: string | symbol): void | an
     },
     set(val: string) {
 
-      console.log(val, /^[A-Za-z0-9_!#$%&'*+\/=?`{|}~^.-]+@[A-Za-z0-9.-]+$/.test(val))
+      console.log('Email');
       if (!/^[A-Za-z0-9_!#$%&'*+\/=?`{|}~^.-]+@[A-Za-z0-9.-]+$/.test(val)) throw new Error('Email is not valid');
       value = val;
     },
@@ -69,9 +81,10 @@ function DeprecatedMethod(reason: string, replacedMethod?: string) {
 }
 
 class Validation {
-  @Email
-  @MinLength(1)
-  @MaxLength(5)
+  // @Email
+  // @MinLength(1)
+  // @MaxLength(5)
+  @Expose(1, 5)
   email: string;
 
   constructor(email: string) {
