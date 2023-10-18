@@ -10,7 +10,7 @@
 function MinLength(length: number) {
   return function <T extends {}>(target: T, propertyKey: string): void | any {
     let value: string;
-    Reflect.defineProperty(target, propertyKey, {
+    Object.defineProperty(target, propertyKey, {
       get() {
         return value;
       },
@@ -18,6 +18,7 @@ function MinLength(length: number) {
         if (val.length < length) throw new Error(`Number of symbols can't be less than ${length}`);
         value = val;
       },
+      configurable: true,
     });
   };
 }
@@ -26,7 +27,7 @@ function MaxLength(length: number) {
   return function <T extends {}>(target: T, propertyKey: string): void | any {
     let value: string;
 
-    Reflect.defineProperty(target, propertyKey, {
+    Object.defineProperty(target, propertyKey, {
       get() {
         return value;
       },
@@ -34,20 +35,24 @@ function MaxLength(length: number) {
         if (val.length > length) throw new Error(`Number of symbols can't be more than ${length}`);
         value = val;
       },
+      configurable: true,
     });
   };
 }
 
 function Email<T extends {}>(target: T, propertyKey: string | symbol): void | any {
   let value: string;
-  Reflect.defineProperty(target, propertyKey, {
+  Object.defineProperty(target, propertyKey, {
     get() {
       return value;
     },
     set(val: string) {
+
+      console.log(val, /^[A-Za-z0-9_!#$%&'*+\/=?`{|}~^.-]+@[A-Za-z0-9.-]+$/.test(val))
       if (!/^[A-Za-z0-9_!#$%&'*+\/=?`{|}~^.-]+@[A-Za-z0-9.-]+$/.test(val)) throw new Error('Email is not valid');
       value = val;
     },
+    configurable: true,
   });
 }
 
@@ -63,7 +68,7 @@ function DeprecatedMethod(reason: string, replacedMethod?: string) {
 
 class Validation {
   @Email
-  @MinLength(55)
+  @MinLength(1)
   @MaxLength(5)
   email: string;
 
@@ -81,7 +86,7 @@ class Validation {
   }
 }
 
-const form = new Validation('mailxzsadff.d');
+const form = new Validation('mail@mail.com');
 form.email;
-form.setEmailDeprecated('ddd');
+// form.setEmailDeprecated('ddd');
 // console.log(form.email);
