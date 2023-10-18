@@ -53,8 +53,7 @@ function Email<T extends {}>(target: T, propertyKey: string | symbol): void | an
 
 function DeprecatedMethod(reason: string, replacedMethod?: string) {
   return function <T, A extends any[], R>(target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
-    const originalMethod = target.setEmail;
-
+    const originalMethod = descriptor.value;
     descriptor.value = function (this: T, ...args: A): R {
       console.log(`Don't use this method because ${reason}${replacedMethod ? ', use ' + replacedMethod : ''}`);
       return originalMethod.apply(this, args);
