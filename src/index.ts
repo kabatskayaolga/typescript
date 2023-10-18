@@ -7,7 +7,7 @@
 
 // Створіть декоратори MinLength, MaxLength та Email
 
-function Expose(lengthMin: number, lengthMax: number) {
+function Compose(lengthMin: number, lengthMax: number) {
   const minLegth = MinLength(lengthMin);
   const maxLength = MaxLength(lengthMax);
   const email = Email;
@@ -84,7 +84,7 @@ class Validation {
   // @Email
   // @MinLength(1)
   // @MaxLength(5)
-  @Expose(1, 5)
+  @Compose(1, 5)
   email: string;
 
   constructor(email: string) {
@@ -101,7 +101,5 @@ class Validation {
   }
 }
 
-const form = new Validation('mail@mail.com');
+const form = new Validation('mailmail.com');
 form.email;
-// form.setEmailDeprecated('ddd');
-// console.log(form.email);
