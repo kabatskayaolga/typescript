@@ -15,7 +15,7 @@ function MinLength(length: number) {
         return value;
       },
       set(val: string) {
-        if (val.length < length) throw new Error(`Number of symbols can't less than ${length}`);
+        if (val.length < length) throw new Error(`Number of symbols can't be less than ${length}`);
         value = val;
       },
     });
@@ -31,7 +31,7 @@ function MaxLength(length: number) {
         return value;
       },
       set(val: string) {
-        if (val.length > length) throw new Error(`Number of symbols can't less than ${length}`);
+        if (val.length > length) throw new Error(`Number of symbols can't be more than ${length}`);
         value = val;
       },
     });
@@ -43,7 +43,6 @@ function Email<T extends {}>(target: T, propertyKey: string | symbol): void | an
   Reflect.defineProperty(target, propertyKey, {
     get() {
       return value;
-      // return value;
     },
     set(val: string) {
       if (!/^[A-Za-z0-9_!#$%&'*+\/=?`{|}~^.-]+@[A-Za-z0-9.-]+$/.test(val)) throw new Error('Email is not valid');
