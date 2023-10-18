@@ -15,6 +15,7 @@ function MinLength(length: number) {
         return value;
       },
       set(val: string) {
+        console.log('MinLength')
         if (val.length < length) throw new Error(`Number of symbols can't be less than ${length}`);
         value = val;
       },
@@ -32,6 +33,7 @@ function MaxLength(length: number) {
         return value;
       },
       set(val: string) {
+        console.log('MaxLength')
         if (val.length > length) throw new Error(`Number of symbols can't be more than ${length}`);
         value = val;
       },
