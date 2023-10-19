@@ -21,6 +21,7 @@ function Compose(lengthMin: number, lengthMax: number) {
 
 function MinLength(length: number) {
   return function <T extends {}>(target: T, propertyKey: string): void | any {
+    const originalSetter = Object.getOwnPropertyDescriptor(target, propertyKey)?.set;
     let value: string;
     Object.defineProperty(target, propertyKey, {
       get() {
@@ -29,7 +30,7 @@ function MinLength(length: number) {
       set(val: string) {
         console.log('MinLength');
         if (val.length < length) throw new Error(`Number of symbols can't be less than ${length}`);
-        value = val;
+        originalSetter?.call(target, val);
       },
       configurable: true,
     });
@@ -38,6 +39,7 @@ function MinLength(length: number) {
 
 function MaxLength(length: number) {
   return function <T extends {}>(target: T, propertyKey: string): void | any {
+    const originalSetter = Object.getOwnPropertyDescriptor(target, propertyKey)?.set;
     let value: string;
 
     Object.defineProperty(target, propertyKey, {
@@ -47,7 +49,7 @@ function MaxLength(length: number) {
       set(val: string) {
         console.log('MaxLength');
         if (val.length > length) throw new Error(`Number of symbols can't be more than ${length}`);
-        value = val;
+        originalSetter?.call(target, val);
       },
       configurable: true,
     });
@@ -55,6 +57,7 @@ function MaxLength(length: number) {
 }
 
 function Email<T extends {}>(target: T, propertyKey: string | symbol): void | any {
+  const originalSetter = Object.getOwnPropertyDescriptor(target, propertyKey)?.set;
   let value: string;
   Object.defineProperty(target, propertyKey, {
     get() {
@@ -64,7 +67,7 @@ function Email<T extends {}>(target: T, propertyKey: string | symbol): void | an
 
       console.log('Email');
       if (!/^[A-Za-z0-9_!#$%&'*+\/=?`{|}~^.-]+@[A-Za-z0-9.-]+$/.test(val)) throw new Error('Email is not valid');
-      value = val;
+      originalSetter?.call(target, val);
     },
     configurable: true,
   });
@@ -101,5 +104,5 @@ class Validation {
   }
 }
 
-const form = new Validation('mailmail.com');
+const form = new Validation('mail@mail.com');
 form.email;
