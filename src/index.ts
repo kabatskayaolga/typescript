@@ -51,8 +51,6 @@ interface IClient {
 }
 
 class Client implements IClient {
-  private uuid: number;
-
   get birthYear(): number {
     return this._birthYear;
   }
@@ -60,37 +58,37 @@ class Client implements IClient {
   constructor(
     public readonly firstName: string,
     public readonly lastname: string,
-    private readonly _birthYear: number
-  ) {
-    this.uuid = generateUUID();
-  }
+    private readonly _birthYear: number,
+    private uuid: number
+  ) { }
 }
 
-const generateUUID = (): number => Math.floor(Math.random() / 1000000000000000000);
-
 class Reservation {
-  private uuid: number;
-
   constructor(
     public readonly checkinDate: string,
     public readonly numberOfDays: number,
     public readonly client: Client,
     public readonly room: Room,
     public readonly price: number,
-    public readonly currency: CurrencyEnum
-  ) {
-    this.uuid = generateUUID();
+    public readonly currency: CurrencyEnum,
+    private uuid: number
+  ) { }
+}
+
+class Genetator {
+  public generateUUID(): number {
+    return Math.floor(Math.random() / 1000000000000000000);
   }
 }
 
 class PayPal {
-  payment(amount: number): boolean {
+  public payment(amount: number): boolean {
     return true;
   }
 }
 
 class Visa {
-  payment(amount: number): boolean {
+  public payment(amount: number): boolean {
     return true;
   }
 }
@@ -102,8 +100,13 @@ class Hotel {
 
   payPalPaymentService: PayPal;
   visaPaymentService: Visa;
+  uuidGenerator: Genetator;
 
-  constructor(private price: IPrice) { }
+  constructor(private price: IPrice) {
+    this.payPalPaymentService = new PayPal();
+    this.visaPaymentService = new Visa();
+    this.uuidGenerator = new Genetator();
+  }
 
   private payForStay(method: PaymentServiceEnum, amount: number): boolean {
     if (method === PaymentServiceEnum.PAYPAL) {
@@ -127,7 +130,7 @@ class Hotel {
     lastname: IClient['lastname'],
     birthYear: IClient['birthYear']
   ): Client {
-    const client = new Client(firstName, lastname, birthYear);
+    const client = new Client(firstName, lastname, birthYear, this.uuidGenerator.generateUUID());
     this.clients.push(client);
     return client;
   }
@@ -171,7 +174,16 @@ class Hotel {
 
     if (isAvailableRoom && isClientCreated && isPayed) {
       const room = this.rooms.find(room => room.type === type);
-      const reservation = new Reservation(checkInDate, numberOfDays, client, room, price, currency);
+
+      const reservation = new Reservation(
+        checkInDate,
+        numberOfDays,
+        client,
+        room,
+        price,
+        currency,
+        this.uuidGenerator.generateUUID()
+      );
 
       this.reservations.push(reservation);
       return 'Your reservation was successful';
