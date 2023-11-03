@@ -1,136 +1,182 @@
-// Вам необхідно написати додатокTodo list. У списку нотаток повинні бути методи для додавання нового запису, видалення, редагування та отримання повної інформації про нотатку за ідентифікатором, а так само отримання списку всіх нотаток. Крім цього, у користувача має бути можливість позначити нотаток, як виконаний, і отримання інформації про те, скільки всього нотаток у списку і скільки залишилося невиконаними. Нотатки не повинні бути порожніми.
-
-// Кожний нотаток має назву, зміст, дату створення і редагування та статус. Нотатки бувають двох типів. Дефолтні та такі, які вимагають підтвердження при ридагуванні.
-
-// Окремо необхідно розширити поведінку списку та додати можливість пошуку нотатка за ім'ям або змістом.
-// Також окремо необхідно розширити список можливістю сортування нотаток за статусом або часом створення.
-
-enum Sort {
-  STATUS = 'status',
-  DATE = 'date',
+interface ISeasonsPrice {
+  lowSeason: number;
+  highSeason: number;
 }
 
-interface IUpdateData {
-  name: string | undefined;
-  content: string | undefined;
+enum RoomTypeEnum {
+  STANDART = 'Standart',
+  LUX = 'Lux',
 }
 
-class TodoList {
-  private tasks: Task[] = [];
-
-  addTask(data: IUpdateData): void {
-    const { name, content } = data;
-    if (!name || !content) throw new Error("Name or context can't be empty");
-
-    const task = new Task(this.tasks.length, name, content);
-    this.tasks.push(task);
-  }
-
-  deleteTask(taskId: Task['id']): void {
-    this.tasks = this.tasks.filter(task => task.id !== taskId);
-  }
-
-  editTask(taskId: Task['id'], data: IUpdateData): void {
-    this.getTask(taskId).edit(data);
-  }
-
-  setDone(taskId: Task['id']): void {
-    this.getTask(taskId).changeStatus();
-  }
-
-  getTask(taskId: Task['id']): Task {
-    return this.tasks.find(task => task.id === taskId);
-  }
-
-  getTasks(): (Task | ProtectedTask)[] {
-    return this.tasks;
-  }
-
-  getNumberOfAllTasks(): string {
-    return `There are ${this.getTasks().length} tasks`;
-  }
-
-  getNumberOfnotDoneTasks(): string {
-    return `There are ${this.tasks.filter(task => task.status).length} unfinished tasks`;
-  }
+interface IPrice {
+  [RoomTypeEnum.STANDART]: ISeasonsPrice;
+  [RoomTypeEnum.LUX]: ISeasonsPrice;
 }
 
-class ToDoListExtendingBehavior {
-  constructor(private readonly list: TodoList) { }
-
-  findTask(searchRequest: string): Task[] {
-    return this.list
-      .getTasks()
-      .filter(task => task.name.indexOf(searchRequest) >= 0 || task.content.indexOf(searchRequest) >= 0);
-  }
-
-  sortTasks(sort: Sort): Task[] {
-    return this.list.getTasks().sort((a, b) => {
-      if (sort === Sort.DATE) {
-        if (a.createdDate < b.createdDate) {
-          return -1;
-        }
-        if (a.createdDate > b.createdDate) {
-          return 1;
-        }
-      } else {
-        if (a.status < b.status) {
-          return -1;
-        }
-        if (a.status > b.status) {
-          return 1;
-        }
-      }
-    });
-  }
+enum PaymentServiceEnum {
+  PAYPAL = 'PayPal',
+  VISA = 'Visa',
 }
 
-class Task {
-  protected _createdDate: string;
-  protected editDate: string = undefined;
-  public status: boolean = false;
+enum CurrencyEnum {
+  UAH = 'UAH',
+  USD = '$',
+  EUR = '€',
+}
 
-  get name(): string {
-    return this._name;
+interface IRoom {
+  readonly roomNummer: number;
+  readonly type: RoomTypeEnum;
+}
+
+class Room implements IRoom {
+  get roomNummer(): number {
+    return this._roomNumber;
   }
 
-  get content(): string {
-    return this._content;
-  }
-
-  get createdDate(): string {
-    return this._createdDate;
+  get type(): RoomTypeEnum {
+    return this._type;
   }
 
   constructor(
-    public readonly id: number,
-    protected _name: string,
-    protected _content: string
+    private readonly _roomNumber: number,
+    private readonly _type: RoomTypeEnum
+  ) { }
+}
+
+interface IClient {
+  firstName: string;
+  lastname: string;
+  birthYear: number;
+}
+
+class Client implements IClient {
+  private uuid: number;
+
+  get birthYear(): number {
+    return this._birthYear;
+  }
+
+  constructor(
+    public readonly firstName: string,
+    public readonly lastname: string,
+    private readonly _birthYear: number
   ) {
-    this._createdDate = String(new Date());
-  }
-
-  edit(data: IUpdateData): void {
-    this.handleEdit(data);
-  }
-
-  changeStatus(): void {
-    this.status = !this.status;
-  }
-
-  protected handleEdit({ name, content }): void {
-    if (name) this._name = name;
-    if (content) this._content = content;
-    this.editDate = new Date().toString();
+    this.uuid = generateUUID();
   }
 }
 
-class ProtectedTask extends Task {
-  override edit(data: IUpdateData): void {
-    const confirmValue = confirm('Do you really want to change this task?');
+const generateUUID = (): number => Math.floor(Math.random() / 1000000000000000000);
 
-    if (confirmValue) {
-      this.handleEdit(data);
+class Reservation {
+  private uuid: number;
+
+  constructor(
+    public readonly checkinDate: string,
+    public readonly numberOfDays: number,
+    public readonly client: Client,
+    public readonly room: Room,
+    public readonly price: number,
+    public readonly currency: CurrencyEnum
+  ) {
+    this.uuid = generateUUID();
+  }
+}
+
+class PayPal {
+  payment(amount: number): boolean {
+    return true;
+  }
+}
+
+class Visa {
+  payment(amount: number): boolean {
+    return true;
+  }
+}
+
+class Hotel {
+  private clients: Client[] = [];
+  private rooms: Room[] = [];
+  private reservations: Reservation[] = [];
+
+  payPalPaymentService: PayPal;
+  visaPaymentService: Visa;
+
+  constructor(private price: IPrice) { }
+
+  private payForStay(method: PaymentServiceEnum, amount: number): boolean {
+    if (method === PaymentServiceEnum.PAYPAL) {
+      return this.payPalPaymentService.payment(amount);
     }
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (method === PaymentServiceEnum.VISA) {
+      return this.visaPaymentService.payment(amount);
+    }
+  }
+
+  private checkRoomAvailability(type: IRoom['type'], checkInDate: string, numberOfDays: number): boolean {
+    //// some code;
+
+    return true;
+  }
+
+  private addClient(
+    firstName: IClient['firstName'],
+    lastname: IClient['lastname'],
+    birthYear: IClient['birthYear']
+  ): Client {
+    const client = new Client(firstName, lastname, birthYear);
+    this.clients.push(client);
+    return client;
+  }
+
+  addRoom(roomNumber: IRoom['roomNummer'], type: IRoom['type']): void {
+    const room = new Room(roomNumber, type);
+    this.rooms.push(room);
+  }
+
+  getActualPrice(type: RoomTypeEnum): number {
+    const date = new Date();
+    const monthNumber = date.getMonth();
+    if (monthNumber >= 4 && monthNumber <= 10) {
+      return this.price[type].highSeason;
+    } else {
+      return this.price[type].lowSeason;
+    }
+  }
+
+  addReservation(
+    // roomData
+    type: RoomTypeEnum,
+    checkInDate: string,
+    numberOfDays: number,
+
+    // clientData
+    firstName: IClient['firstName'],
+    lastname: IClient['lastname'],
+    birthYear: IClient['birthYear'],
+
+    // payment
+    method: PaymentServiceEnum,
+    currency: CurrencyEnum
+  ): string {
+    const isAvailableRoom = this.checkRoomAvailability(type, checkInDate, numberOfDays);
+    const client = this.addClient(firstName, lastname, birthYear);
+    const isClientCreated = !!client;
+
+    const price = this.getActualPrice(type);
+    const isPayed = this.payForStay(method, price);
+
+    if (isAvailableRoom && isClientCreated && isPayed) {
+      const room = this.rooms.find(room => room.type === type);
+      const reservation = new Reservation(checkInDate, numberOfDays, client, room, price, currency);
+
+      this.reservations.push(reservation);
+      return 'Your reservation was successful';
+    }
+
+    return 'Your reservation failed';
   }
 }
