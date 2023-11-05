@@ -106,8 +106,6 @@ class Deposite extends Command {
 }
 
 class Withdraw extends Command {
-  private prewBalance: number;
-
   constructor(
     private amount: number,
     private currency: CurrencyTypesEnum,
@@ -115,7 +113,6 @@ class Withdraw extends Command {
   ) {
     super(bankAccount);
     this.bankAccount = bankAccount;
-    this.prewBalance = bankAccount.balance;
   }
 
   execute(): void {
