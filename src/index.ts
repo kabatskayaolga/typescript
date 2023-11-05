@@ -1,194 +1,280 @@
-interface ISeasonsPrice {
-  lowSeason: number;
-  highSeason: number;
+/* eslint-disable no-console */
+interface IBankClient {
+  readonly firstName: string;
+  readonly lastName: string;
 }
 
-enum RoomTypeEnum {
-  STANDART = 'Standart',
-  LUX = 'Lux',
+enum CurrencyTypesEnum {
+  USD = 'usd',
+  EUR = 'eur',
+  UAH = 'uah',
 }
 
-interface IPrice {
-  [RoomTypeEnum.STANDART]: ISeasonsPrice;
-  [RoomTypeEnum.LUX]: ISeasonsPrice;
+interface ICurrencyConversationStrategy {
+  convert(amount: number, currency: CurrencyTypesEnum): number;
 }
 
-enum PaymentServiceEnum {
-  PAYPAL = 'PayPal',
-  VISA = 'Visa',
+interface IObserver {
+  update(account: IObservable): void;
 }
 
-enum CurrencyEnum {
-  UAH = 'UAH',
-  USD = '$',
-  EUR = '€',
+interface IObservable {
+  attach(observer: IObserver): void;
+  detach(observer: IObserver): void;
+  notify(account: BankAccount): void;
 }
 
-interface IRoom {
-  readonly roomNummer: number;
-  readonly type: RoomTypeEnum;
+enum StatusEnum {
+  OPEN = 'open',
+  CLOSED = 'closed',
 }
 
-class Room implements IRoom {
-  get roomNummer(): number {
-    return this._roomNumber;
-  }
+const exchangeRates = {
+  [CurrencyTypesEnum.USD]: 1.1,
+  [CurrencyTypesEnum.EUR]: 0.9,
+  [CurrencyTypesEnum.UAH]: 38,
+};
 
-  get type(): RoomTypeEnum {
-    return this._type;
-  }
+class CurrentRateConversationStrategy implements ICurrencyConversationStrategy {
+  constructor(private exchangeRates: Record<CurrencyTypesEnum, number>) { }
 
-  constructor(
-    private readonly _roomNumber: number,
-    private readonly _type: RoomTypeEnum
-  ) { }
-}
+  public convert(amount: number, currency: CurrencyTypesEnum): number {
+    const rate = this.exchangeRates[currency];
 
-interface IClient {
-  firstName: string;
-  lastname: string;
-  birthYear: number;
-}
+    if (!rate) throw new Error(`Exchange rate not available for currency ${currency}`);
 
-class Client implements IClient {
-  get birthYear(): number {
-    return this._birthYear;
-  }
-
-  constructor(
-    public readonly firstName: string,
-    public readonly lastname: string,
-    private readonly _birthYear: number,
-    private uuid: number
-  ) { }
-}
-
-class Reservation {
-  constructor(
-    public readonly checkinDate: string,
-    public readonly numberOfDays: number,
-    public readonly client: Client,
-    public readonly room: Room,
-    public readonly price: number,
-    public readonly currency: CurrencyEnum,
-    private uuid: number
-  ) { }
-}
-
-class Genetator {
-  public generateUUID(): number {
-    return Math.floor(Math.random() / 1000000000000000000);
+    return amount * rate;
   }
 }
 
-class PayPal {
-  public payment(amount: number): boolean {
-    return true;
+class FixedRateConversationStrategy implements ICurrencyConversationStrategy {
+  private fixedRate!: number;
+
+  constructor(fixedRate: number) {
+    this.fixedRate = fixedRate;
+  }
+
+  public convert(amount: number, currency: CurrencyTypesEnum): number {
+    return amount * this.fixedRate;
   }
 }
 
-class Visa {
-  public payment(amount: number): boolean {
-    return true;
-  }
-}
+abstract class Observable implements IObservable {
+  private readonly observers: IObserver[] = [];
 
-class Hotel {
-  private clients: Client[] = [];
-  private rooms: Room[] = [];
-  private reservations: Reservation[] = [];
-
-  payPalPaymentService: PayPal;
-  visaPaymentService: Visa;
-  uuidGenerator: Genetator;
-
-  constructor(private price: IPrice) {
-    this.payPalPaymentService = new PayPal();
-    this.visaPaymentService = new Visa();
-    this.uuidGenerator = new Genetator();
+  public attach(observer: IObserver): void {
+    const isExist = this.observers.includes(observer);
+    if (!isExist) this.observers.push(observer);
   }
 
-  private payForStay(method: PaymentServiceEnum, amount: number): boolean {
-    if (method === PaymentServiceEnum.PAYPAL) {
-      return this.payPalPaymentService.payment(amount);
+  public detach(observer: IObserver): void {
+    const observerIndex = this.observers.indexOf(observer);
+    if (!~observerIndex) this.observers.splice(observerIndex, 1);
+  }
+
+  public notify(): void {
+    for (const observer of this.observers) {
+      observer.update(this);
     }
+  }
+}
 
+abstract class Command {
+  constructor(protected bankAccount: BankAccount) { }
+
+  abstract execute(): void;
+  abstract undo(): void;
+}
+
+class Deposite extends Command {
+  constructor(
+    private amount: number,
+    private currency: CurrencyTypesEnum,
+    bankAccount: BankAccount
+  ) {
+    super(bankAccount);
+    this.bankAccount = bankAccount;
+  }
+
+  execute(): void {
+    this.bankAccount.deposite(this.amount, this.currency);
+  }
+
+  undo(): void {
+    this.bankAccount.withdraw(this.amount, this.currency);
+  }
+}
+
+class Withdraw extends Command {
+  private prewBalance: number;
+
+  constructor(
+    private amount: number,
+    private currency: CurrencyTypesEnum,
+    bankAccount: BankAccount
+  ) {
+    super(bankAccount);
+    this.bankAccount = bankAccount;
+    this.prewBalance = bankAccount.balance;
+  }
+
+  execute(): void {
+    this.bankAccount.withdraw(this.amount, this.currency);
+  }
+
+  undo(): void {
+    this.bankAccount.deposite(this.amount, this.currency);
+  }
+}
+
+class Transactions {
+  private history: Command[] = [];
+
+  executeCommand(command: Command): void {
+    this.history.push(command);
+    command.execute();
+  }
+
+  undoLastCommand(): void {
+    if (this.history.length > 0) {
+      const lastCommand = this.history.pop();
+      lastCommand.undo();
+    }
+  }
+}
+
+class BankAccount extends Observable {
+  private readonly _currency: CurrencyTypesEnum;
+  private readonly _number: number;
+  private status: StatusEnum = StatusEnum.OPEN;
+  private _balance = 0;
+  private _holder: IBankClient;
+  private _conversionStrategy: ICurrencyConversationStrategy;
+
+  public get number(): number {
+    return this._number;
+  }
+
+  public get balance(): number {
+    return this._balance;
+  }
+
+  public set conversionStrategy(conversionStrategy: ICurrencyConversationStrategy) {
+    this._conversionStrategy = conversionStrategy;
+  }
+
+  public get currency(): CurrencyTypesEnum {
+    return this._currency;
+  }
+
+  constructor(client: IBankClient, currency: CurrencyTypesEnum, conversionStrategy: ICurrencyConversationStrategy) {
+    super();
+    this._currency = currency;
+    this._holder = client;
+    this._number = 123213213;
+    this._conversionStrategy = conversionStrategy;
+  }
+
+  public holder(): IBankClient {
+    return this._holder;
+  }
+
+  public deposite(amount: number, currency: CurrencyTypesEnum): void {
+    const convertedAmount = this._conversionStrategy.convert(amount, currency);
+    this._balance += convertedAmount;
+    this.notify();
+  }
+
+  public withdraw(amount: number, currency: CurrencyTypesEnum): void {
+    const convertedAmount = this._conversionStrategy.convert(amount, currency);
+    this._balance -= convertedAmount;
+    this.notify();
+  }
+
+  public closeBankAccount(): void {
+    this.status = StatusEnum.CLOSED;
+  }
+}
+
+class SMSNOtification implements IObserver {
+  update(account: BankAccount): void {
+    console.log(`notification: Ypur account balance has changed. Current balance: ${account.balance}`);
+  }
+}
+class EmailNOtification implements IObserver {
+  update(account: BankAccount): void {
+    console.log(`notification: Ypur account balance has changed. Current balance: ${account.balance}`);
+  }
+}
+class PushNOtification implements IObserver {
+  update(account: BankAccount): void {
+    console.log(`notification: Ypur account balance has changed. Current balance: ${account.balance}`);
+  }
+}
+
+class Bank {
+  private static instance: Bank;
+  private accounts: BankAccount[] = [];
+
+  private constructor() { }
+
+  public static getInstance(): Bank {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (method === PaymentServiceEnum.VISA) {
-      return this.visaPaymentService.payment(amount);
+    if (!Bank.instance) {
+      Bank.instance = new Bank();
     }
+    return Bank.instance;
   }
 
-  private checkRoomAvailability(type: IRoom['type'], checkInDate: string, numberOfDays: number): boolean {
-    //// some code;
-
-    return true;
+  private isAlreadyCreatedBankAccountWithSameCurrency(client: IBankClient, currency: CurrencyTypesEnum): boolean {
+    return this.accounts.some(account => {
+      const { firstName, lastName } = account.holder();
+      return firstName === client.firstName && lastName === client.lastName && account.currency === currency;
+    });
   }
 
-  private addClient(
-    firstName: IClient['firstName'],
-    lastname: IClient['lastname'],
-    birthYear: IClient['birthYear']
-  ): Client {
-    const client = new Client(firstName, lastname, birthYear, this.uuidGenerator.generateUUID());
-    this.clients.push(client);
-    return client;
-  }
-
-  addRoom(roomNumber: IRoom['roomNummer'], type: IRoom['type']): void {
-    const room = new Room(roomNumber, type);
-    this.rooms.push(room);
-  }
-
-  getActualPrice(type: RoomTypeEnum): number {
-    const date = new Date();
-    const monthNumber = date.getMonth();
-    if (monthNumber >= 4 && monthNumber <= 10) {
-      return this.price[type].highSeason;
-    } else {
-      return this.price[type].lowSeason;
-    }
-  }
-
-  addReservation(
-    // roomData
-    type: RoomTypeEnum,
-    checkInDate: string,
-    numberOfDays: number,
-
-    // clientData
-    firstName: IClient['firstName'],
-    lastname: IClient['lastname'],
-    birthYear: IClient['birthYear'],
-
-    // payment
-    method: PaymentServiceEnum,
-    currency: CurrencyEnum
-  ): string {
-    const isAvailableRoom = this.checkRoomAvailability(type, checkInDate, numberOfDays);
-    const client = this.addClient(firstName, lastname, birthYear);
-    const isClientCreated = !!client;
-
-    const price = this.getActualPrice(type);
-    const isPayed = this.payForStay(method, price);
-
-    if (isAvailableRoom && isClientCreated && isPayed) {
-      const room = this.rooms.find(room => room.type === type);
-
-      const reservation = new Reservation(
-        checkInDate,
-        numberOfDays,
-        client,
-        room,
-        price,
-        currency,
-        this.uuidGenerator.generateUUID()
-      );
-
-      this.reservations.push(reservation);
-      return 'Your reservation was successful';
+  public createBankAccount(
+    client: IBankClient,
+    currency: CurrencyTypesEnum,
+    conversionStrategy: ICurrencyConversationStrategy
+  ): BankAccount | string {
+    if (this.isAlreadyCreatedBankAccountWithSameCurrency(client, currency)) {
+      return `Bank Account for ${client.firstName} ${client.lastName} in ${currency} currency has already been created`;
     }
 
-    return 'Your reservation failed';
+    const account = new BankAccount(client, currency, conversionStrategy);
+    this.accounts.push(account);
+    return account;
+  }
+
+  public closeBankAccount(client: IBankClient, currency: CurrencyTypesEnum): string {
+    const account = this.accounts.find(account => {
+      const { firstName, lastName } = account.holder();
+      return firstName === client.firstName && lastName === client.lastName && account.currency === currency;
+    });
+
+    account.closeBankAccount();
+    return `Bank Account for ${client.firstName} ${client.lastName} in ${currency} has been closed`;
   }
 }
+
+/* const currentRatesStrategy = new CurrentRateConversationStrategy(exchangeRates);
+
+const client = { firstName: 'John', lastName: 'Doe' };
+const bank = Bank.getInstance();
+const account1 = bank.createBankAccount(client, CurrencyTypesEnum.USD, currentRatesStrategy);
+const account2 = bank.createBankAccount(client, CurrencyTypesEnum.USD, currentRatesStrategy);
+const account3 = bank.createBankAccount(client, CurrencyTypesEnum.UAH, currentRatesStrategy);
+
+bank.closeBankAccount(client, CurrencyTypesEnum.USD);
+const transactions = new Transactions();
+
+if (account1 instanceof BankAccount) {
+  const deposit1CommandForAccount1 = new Deposite(20, CurrencyTypesEnum.EUR, account1);
+  const deposit2CommandForAccount1 = new Deposite(20, CurrencyTypesEnum.EUR, account1);
+  transactions.executeCommand(deposit1CommandForAccount1);
+  transactions.executeCommand(deposit2CommandForAccount1);
+}
+
+transactions.undoLastCommand();
+ */
