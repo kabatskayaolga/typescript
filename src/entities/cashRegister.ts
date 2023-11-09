@@ -1,5 +1,7 @@
 import { BaseMediatorComponent } from '../mediators/cashRegisterMediator';
-import { TicketTypeEnum, IClient } from '../types';
+import { TicketTypeEnum } from '../types';
+import Ticket from './ticket';
+import TicketPrice from './ticketPrice';
 
 export default class CashRegister extends BaseMediatorComponent {
   public tickets: Ticket[] = [];
@@ -34,18 +36,4 @@ export default class CashRegister extends BaseMediatorComponent {
     if (client) this.mediator.notify(this, 'create visitor', client);
     this._dayRevenue += ticketPrice.price;
   }
-}
-
-class Ticket {
-  constructor(
-    public ticketPrice: TicketPrice,
-    public client?: IClient | IClient[]
-  ) {}
-}
-
-export class TicketPrice {
-  constructor(
-    public type: TicketTypeEnum,
-    public price: number
-  ) {}
 }
