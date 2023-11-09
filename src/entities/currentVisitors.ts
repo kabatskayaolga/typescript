@@ -1,11 +1,13 @@
-import { IClient, NoticeTypeEnum } from '../types';
+import { IClient, IObserver, NoticeTypeEnum, Observable } from '../types';
 
-export default class CurrentVisitors {
+export default class CurrentVisitors extends Observable {
   public visitors: Visitor[] = [];
+  public actualNotifyType: NoticeTypeEnum;
 
   public addVisitor({ firstName, lastName, phone, email }: IClient): void {
     const visitor = new Visitor(firstName, lastName, phone, email);
     this.visitors.push(visitor);
+    this.attach(visitor);
   }
 
   public removeVisitors(): void {
@@ -13,20 +15,12 @@ export default class CurrentVisitors {
   }
 
   public noticeClients(type: NoticeTypeEnum): void {
-    for (let index = 0; index < this.visitors.length; index++) {
-      const visitor = this.visitors[index];
-      if (type === NoticeTypeEnum.ClosingIn15Minutes) {
-        visitor?.noticeClosing();
-      } else {
-        visitor?.noticeThankForVisiting();
-      }
-    }
-
-    if (type === NoticeTypeEnum.Closed) this.removeVisitors();
+    this.actualNotifyType = type;
+    this.notify();
   }
 }
 
-class Visitor implements IClient {
+class Visitor implements IClient, IObserver {
   constructor(
     public firstName: string,
     public lastName: string,
@@ -34,11 +28,11 @@ class Visitor implements IClient {
     public email: string
   ) {}
 
-  public noticeClosing(): void {
-    console.log(`Dear ${this.firstName} ${this.lastName} we will be closed at 15 minutes`);
-  }
-
-  public noticeThankForVisiting(): void {
-    console.log(`Dear ${this.firstName} ${this.lastName}, thank you for coming. See you next time`);
+  public update(observer: CurrentVisitors): void {
+    if (observer.actualNotifyType === NoticeTypeEnum.ClosingIn15Minutes) {
+      console.log(`Dear ${this.firstName} ${this.lastName} we will be closed at 15 minutes`);
+    } else {
+      console.log(`Dear ${this.firstName} ${this.lastName}, thank you for coming. See you next time`);
+    }
   }
 }

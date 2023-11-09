@@ -4,7 +4,7 @@ import AdvertisingDepartment from './entities/advertisingDepartment';
 import CashRegister from './entities/cashRegister';
 import CurrentVisitors from './entities/currentVisitors';
 import Animal from './entities/animal';
-import { AnimalKindEnum, EmployeePositionsEnum, HealthEnum, TicketTypeEnum } from './types';
+import { AnimalKindEnum, EmployeePositionsEnum, HealthEnum, NoticeTypeEnum, TicketTypeEnum } from './types';
 import Employee from './entities/employee';
 
 const advertisingDepartment = new AdvertisingDepartment();
@@ -68,5 +68,11 @@ accounting.paySalaries();
 accounting.createFinancialReport();
 
 accounting.getDayRevenue(cashRegister);
+
+currentVisitors.noticeClients(NoticeTypeEnum.ClosingIn15Minutes);
+
+currentVisitors.noticeClients(NoticeTypeEnum.Closed);
+
 accounting.createCostsForFeedingReport();
 accounting.createSalariesReport();
+administration.createAdvertision('Sale only Today');

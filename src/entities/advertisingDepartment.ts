@@ -1,23 +1,23 @@
-import { IClient } from '../types';
+import { IClient, IObserver, Observable } from '../types';
 
-export default class AdvertisingDepartment {
+export default class AdvertisingDepartment extends Observable {
   clients: Client[] = [];
+  public actualMessage: string;
 
   public addClient({ firstName, lastName, phone, email }: IClient): void {
     const client = new Client(firstName, lastName, phone, email);
     this.clients.push(client);
+
+    this.attach(client);
   }
 
   public createEMailing(message: string): void {
-    for (let i = 0; i < this.clients.length; i++) {
-      const client = this.clients[i];
-
-      client?.sendEmail(message);
-    }
+    this.actualMessage = message;
+    this.notify();
   }
 }
 
-class Client implements IClient {
+class Client implements IClient, IObserver {
   constructor(
     public firstName: string,
     public lastName: string,
@@ -25,8 +25,8 @@ class Client implements IClient {
     public email: string
   ) {}
 
-  public sendEmail(message: string): void {
+  public update(observer: AdvertisingDepartment): void {
     console.log(` mailto: ${this.email}; 
-                  body: Dear ${this.firstName} ${this.lastName}, ${message}`);
+                  body: Dear ${this.firstName} ${this.lastName}, ${observer.actualMessage}`);
   }
 }
