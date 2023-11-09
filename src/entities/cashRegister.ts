@@ -2,7 +2,7 @@ import { BaseMediatorComponent } from '../mediators/cashRegisterMediator';
 import { TicketTypeEnum, IClient } from '../types';
 
 export default class CashRegister extends BaseMediatorComponent {
-  tickets: Ticket[] = [];
+  public tickets: Ticket[] = [];
   private ticketsPrice: { [key: string]: TicketPrice } = {};
   private _dayRevenue: number = 0;
 

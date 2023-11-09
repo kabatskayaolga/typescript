@@ -1,5 +1,3 @@
-import { BaseMediatorComponent } from './mediators/cashRegisterMediator';
-
 export enum TicketTypeEnum {
   EDULT = 'edult',
   CHILD = 'child',
@@ -46,32 +44,12 @@ export interface IObserver {
   update(account: IObservable): void;
 }
 
-interface IObservable {
+export interface IObservable {
   attach(observer: IObserver): void;
   dettach(observer: IObserver): void;
   notify(): void;
 }
 
-export abstract class Observable extends BaseMediatorComponent implements IObservable {
-  private readonly observers: IObserver[] = [];
-
-  public attach(observer: IObserver): void {
-    const isExist = this.observers.includes(observer);
-    if (!isExist) this.observers.push(observer);
-  }
-
-  public dettach(observer: IObserver): void {
-    const observerIndex = this.observers.indexOf(observer);
-    if (!~observerIndex) this.observers.splice(observerIndex, 1);
-  }
-
-  public notify(): void {
-    for (const observer of this.observers) {
-      observer.update(this);
-    }
-  }
-}
-
 export interface IMediator {
-  notify(sender: object, event: string, data: unknown): void;
+  notify(sender: object, event: string, data?: IClient | IClient[]): void;
 }

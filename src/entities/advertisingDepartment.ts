@@ -1,7 +1,9 @@
-import { IClient, IObserver, Observable } from '../types';
+import { Observable } from '../observable';
+import { IClient } from '../types';
+import Client from './client';
 
 export default class AdvertisingDepartment extends Observable {
-  clients: Client[] = [];
+  private clients: Client[] = [];
   public actualMessage: string;
 
   public addClient({ firstName, lastName, phone, email }: IClient): void {
@@ -14,19 +16,5 @@ export default class AdvertisingDepartment extends Observable {
   public createEMailing(message: string): void {
     this.actualMessage = message;
     this.notify();
-  }
-}
-
-class Client implements IClient, IObserver {
-  constructor(
-    public firstName: string,
-    public lastName: string,
-    public phone: string,
-    public email: string
-  ) {}
-
-  public update(observer: AdvertisingDepartment): void {
-    console.log(` mailto: ${this.email}; 
-                  body: Dear ${this.firstName} ${this.lastName}, ${observer.actualMessage}`);
   }
 }

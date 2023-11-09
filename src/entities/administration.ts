@@ -5,8 +5,8 @@ import CashRegister from './cashRegister';
 import Employee from './employee';
 
 export default class Administration {
-  employees: Employee[] = [];
-  animals: Animal[] = [];
+  public employees: Employee[] = [];
+  public animals: Animal[] = [];
 
   constructor(
     private cashRegister: CashRegister,
