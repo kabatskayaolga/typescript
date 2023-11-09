@@ -1,9 +1,7 @@
+import { BaseMediatorComponent } from '../mediators/cashRegisterMediator';
 import { TicketTypeEnum, IClient } from '../types';
 
-import AdvertisingDepartment from './advertisingDepartment';
-import CurrentVisitors from './currentVisitors';
-
-export default class CashRegister {
+export default class CashRegister extends BaseMediatorComponent {
   tickets: Ticket[] = [];
   private ticketsPrice: { [key: string]: TicketPrice } = {};
   private _dayRevenue: number = 0;
@@ -11,11 +9,6 @@ export default class CashRegister {
   get dayRevenue(): number {
     return this._dayRevenue;
   }
-
-  constructor(
-    private advertisingDepartment: AdvertisingDepartment,
-    private currentVisitors: CurrentVisitors
-  ) {}
 
   public transferToAccounting(): number {
     const balance = this._dayRevenue;
@@ -31,19 +24,14 @@ export default class CashRegister {
     this.ticketsPrice[ticketType] = ticketPrice;
   }
 
-  private addClient(client: IClient): void {
-    this.currentVisitors.addVisitor(client);
-    this.advertisingDepartment.addClient(client);
-  }
-
   public selling(ticketType: TicketTypeEnum, client: Ticket['client']): void {
     const ticketPrice = this.ticketsPrice[ticketType];
     if (!ticketPrice) throw new Error('This ticket has not been created');
 
     const ticket = new Ticket(ticketPrice, client);
     this.tickets.push(ticket);
-    if (client) client instanceof Array ? client.forEach(client => this.addClient(client)) : this.addClient(client);
 
+    if (client) this.mediator.notify(this, 'create visitor', client);
     this._dayRevenue += ticketPrice.price;
   }
 }
@@ -51,7 +39,7 @@ export default class CashRegister {
 class Ticket {
   constructor(
     public ticketPrice: TicketPrice,
-    public client: IClient | IClient[] | undefined
+    public client?: IClient | IClient[]
   ) {}
 }
 

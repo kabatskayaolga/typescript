@@ -10,14 +10,6 @@ export default class Accounting {
     private animals: Animal[]
   ) {}
 
-  getEmployees(employees: Employee[]): void {
-    this.employees = employees;
-  }
-
-  getAnimals(animals: Animal[]): void {
-    this.animals = animals;
-  }
-
   getDayRevenue(cashRegister: CashRegister): void {
     const dayRevenue = cashRegister.transferToAccounting();
     this.budget += dayRevenue;
