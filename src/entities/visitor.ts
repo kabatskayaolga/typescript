@@ -1,14 +1,7 @@
-import { IClient, IObserver, NoticeTypeEnum } from '../types';
+import { ClientBase, IClient, IObserver, NoticeTypeEnum } from '../types';
 import CurrentVisitors from './currentVisitors';
 
-export default class Visitor implements IClient, IObserver {
-  constructor(
-    public firstName: string,
-    public lastName: string,
-    public phone: string,
-    public email: string
-  ) {}
-
+export default class Visitor extends ClientBase implements IClient, IObserver {
   public update(observer: CurrentVisitors): void {
     if (observer.actualNotifyType === NoticeTypeEnum.ClosingIn15Minutes) {
       console.log(`Dear ${this.firstName} ${this.lastName} we will be closed at 15 minutes`);

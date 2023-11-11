@@ -16,6 +16,16 @@ export interface IClient {
   email: string;
 }
 
+export abstract class ClientBase {
+  constructor(
+    public firstName: string,
+    public lastName: string,
+    public phone: string,
+    public email: string
+  ) {}
+
+}
+
 export enum EmployeePositionsEnum {
   SELLER = 'seller',
   ADMINISTRATOR = 'administrator',
