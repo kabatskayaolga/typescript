@@ -23,7 +23,6 @@ export abstract class ClientBase {
     public phone: string,
     public email: string
   ) {}
-
 }
 
 export enum EmployeePositionsEnum {

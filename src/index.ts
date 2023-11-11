@@ -30,7 +30,7 @@ administration.createPrice(TicketTypeEnum.EDULT, 10);
 administration.createPrice(TicketTypeEnum.CHILD, 5);
 administration.createPrice(TicketTypeEnum.FAMILY, 20);
 
-cashRegister.selling(TicketTypeEnum.EDULT, {
+cashRegister.sellEdultTicket({
   firstName: 'LAla',
   lastName: 'Alal',
   phone: '2323234234',
@@ -38,9 +38,9 @@ cashRegister.selling(TicketTypeEnum.EDULT, {
 });
 
 for (let index = 0; index < 100; index++) {
-  cashRegister.selling(TicketTypeEnum.CHILD, undefined);
+  cashRegister.sellChildTicket();
 }
-cashRegister.selling(TicketTypeEnum.FAMILY, [
+cashRegister.sellFamilyTicket([
   {
     firstName: 'mom',
     lastName: 'mom',

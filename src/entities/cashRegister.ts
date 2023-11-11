@@ -1,5 +1,5 @@
 import { BaseMediatorComponent } from '../mediators/cashRegisterMediator';
-import { TicketTypeEnum } from '../types';
+import { IClient, TicketTypeEnum } from '../types';
 import Ticket from './ticket';
 import TicketPrice from './ticketPrice';
 
@@ -26,7 +26,7 @@ export default class CashRegister extends BaseMediatorComponent {
     this.ticketsPrice[ticketType] = ticketPrice;
   }
 
-  public selling(ticketType: TicketTypeEnum, client: Ticket['client']): void {
+  private selling(ticketType: TicketTypeEnum, client?: IClient | [IClient, IClient]): void {
     const ticketPrice = this.ticketsPrice[ticketType];
     if (!ticketPrice) throw new Error('This ticket has not been created');
 
@@ -35,5 +35,17 @@ export default class CashRegister extends BaseMediatorComponent {
 
     if (client) this.mediator.notify(this, 'create visitor', client);
     this._dayRevenue += ticketPrice.price;
+  }
+
+  public sellChildTicket(): void {
+    this.selling(TicketTypeEnum.CHILD);
+  }
+
+  public sellEdultTicket(client: IClient): void {
+    this.selling(TicketTypeEnum.EDULT, client);
+  }
+
+  public sellFamilyTicket(client: IClient | [IClient, IClient]): void {
+    this.selling(TicketTypeEnum.FAMILY, client);
   }
 }
