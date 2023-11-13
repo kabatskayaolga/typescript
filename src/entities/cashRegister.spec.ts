@@ -11,7 +11,7 @@ describe('CashRegister', () => {
 
   beforeEach(() => {
     cashRegister = new CashRegister();
-    cashRegister['mediator'] = { notify: jest.fn() };
+    Reflect.defineProperty(cashRegister, 'mediator', { value: { notify: jest.fn() } });
   });
 
   afterEach(() => {

@@ -37,7 +37,7 @@ describe('Accounting', () => {
     expect(accounting.getDayRevenue(cashRegister)).toBe(100);
   });
   it('should financian report', () => {
-    accounting['budget'] = 50;
+    Reflect.defineProperty(accounting, 'budget', { value: 50 });
     expect(accounting.createFinancialReport()).toBe(50);
   });
 
