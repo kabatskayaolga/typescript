@@ -26,7 +26,7 @@ describe('Visitor', () => {
   });
 
   it('should send notify', () => {
-    observer.actualNotifyType === NoticeTypeEnum.ClosingIn15Minutes;
+    observer.actualNotifyType = NoticeTypeEnum.Closed;
     expect(visitor.update(observer)).toBe(`Dear ${FIRST_NAME} ${LAST_NAME}, thank you for coming. See you next time`);
   });
 });
