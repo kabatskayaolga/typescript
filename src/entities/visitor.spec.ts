@@ -1,3 +1,5 @@
+import { NoticeTypeEnum } from '../types';
+import CurrentVisitors from './currentVisitors';
 import Visitor from './visitor';
 
 const FIRST_NAME = 'Olja';
@@ -7,7 +9,7 @@ const EMAIL = 'jnj@jj.kk';
 
 describe('Visitor', () => {
   let visitor: Visitor;
-
+  const observer = new CurrentVisitors();
   beforeEach(() => {
     visitor = new Visitor(FIRST_NAME, LAST_NAME, PHONE, EMAIL);
   });
@@ -21,5 +23,10 @@ describe('Visitor', () => {
     expect(visitor.lastName).toBe(LAST_NAME);
     expect(visitor.phone).toBe(PHONE);
     expect(visitor.email).toBe(EMAIL);
+  });
+
+  it('should send notify', () => {
+    observer.actualNotifyType === NoticeTypeEnum.ClosingIn15Minutes;
+    expect(visitor.update(observer)).toBe(`Dear ${FIRST_NAME} ${LAST_NAME}, thank you for coming. See you next time`);
   });
 });
