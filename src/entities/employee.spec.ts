@@ -24,4 +24,8 @@ describe('Employee', () => {
     expect(employee.position).toBe(POSITION);
     expect(employee.salary).toBe(SALARY);
   });
+
+  it('should set duties', () => {
+    expect(employee.duties).toStrictEqual(['generate financial reports']);
+  });
 });
